@@ -5,6 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { NaverMap, type MapPlace } from "@/components/NaverMap";
 
+// 홈 지도에 보일 장소만 (다른 장소는 DB에 있고 고리·해금은 그대로 동작)
+const HOME_PLACES = ["gyeongbokgung", "dongnimmun", "demo-hall"];
+
 export default function Home() {
   const router = useRouter();
   const [places, setPlaces] = useState<MapPlace[] | null>(null);
@@ -12,7 +15,7 @@ export default function Home() {
   useEffect(() => {
     fetch("/api/places")
       .then((r) => r.json())
-      .then((d: { places?: MapPlace[] }) => setPlaces(d.places ?? []))
+      .then((d: { places?: MapPlace[] }) => setPlaces((d.places ?? []).filter((p) => HOME_PLACES.includes(p.slug))))
       .catch(() => setPlaces([]));
   }, []);
 
