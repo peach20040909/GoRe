@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { db, getUserByDevice, uploadPhoto } from "@/lib/db";
 import { judgeRevisit } from "@/lib/memory-ai";
+import { distanceM } from "@/lib/client";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -16,8 +17,10 @@ type MemoryRow = {
   unlock_at: string | null;
   status: "locked" | "opened";
   created_at: string;
-  places: { name_ko: string; description: string };
+  places: { name_ko: string; description: string; lat: number | null; lng: number | null; radius_m: number };
 };
+
+const isCoord = (v: unknown, max: number): v is number => typeof v === "number" && Number.isFinite(v) && Math.abs(v) <= max;
 
 const SAME_SPOT_MIN = 0.5; // 판정 기준을 너그럽게 (기획서 13. 리스크)
 
@@ -37,7 +40,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const [user, rows] = await Promise.all([
       getUserByDevice(deviceId),
-      db<MemoryRow[]>(`memories?id=eq.${encodeURIComponent(id)}&select=*,places(name_ko,description)`),
+      db<MemoryRow[]>(`memories?id=eq.${encodeURIComponent(id)}&select=*,places(name_ko,description,lat,lng,radius_m)`),
     ]);
     const memory = rows[0];
     if (!memory) return NextResponse.json({ error: "없는 기억이에요" }, { status: 404 });
@@ -57,6 +60,23 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           opened: false,
           sameSpot: null,
           lockedReason: `${at.toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul" })}부터 열려요`,
+        });
+      }
+    }
+
+    // 위치: 장소 고정 좌표 반경 안에서만 사진 판정으로 넘어감 (기획서 6-2 A: 사진 판정 + GPS). demo는 발표장용으로 건너뜀
+    const pl = memory.places;
+    if (!demo && pl.lat != null && pl.lng != null) {
+      if (!isCoord(lat, 90) || !isCoord(lng, 180)) {
+        return NextResponse.json({ opened: false, sameSpot: null, lockedReason: "위치 권한을 허용해야 기억을 열 수 있어요" });
+      }
+      const distance = Math.round(distanceM({ lat, lng }, { lat: pl.lat, lng: pl.lng }));
+      if (distance > pl.radius_m) {
+        return NextResponse.json({
+          opened: false,
+          sameSpot: null,
+          distance,
+          lockedReason: `${pl.name_ko}에서 ${distance}m 떨어져 있어요. ${pl.radius_m}m 안으로 와서 다시 찍어 주세요`,
         });
       }
     }

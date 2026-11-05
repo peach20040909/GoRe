@@ -179,8 +179,9 @@ draft → DB 컬럼 매핑 (`supabase/migrations/002_memory_card.sql` 실행 후
 처리 순서
 1. 본인 기억인지 확인 (`deviceId` → `users.id` = `memories.user_id`), 아니면 403
 2. `unlock_type = date`이고 아직 날짜 전이면 → `lockedReason: "2027년 11월 6일부터 열려요"` (단, `demo: true`면 건너뜀 — 발표용)
-3. AI에 **잠글 때 사진(URL) + 지금 사진** 두 장과 장소 설명을 보내 같은 자리인지 판정. 같으면 원문·잠근 날짜·오늘 날짜로 재회 리포트도 같은 호출에서 작성
-4. `revisits` insert, 같으면 `memories.status = opened`, `opened_at = now()`
+3. **위치 확인:** 장소 고정 좌표에서 `radius_m` 밖이면 AI 호출 없이 `{ opened: false, distance, lockedReason: "홍제폭포에서 1239m 떨어져 있어요…" }`. `lat/lng`가 없으면 "위치 권한을 허용해야…". `demo: true`면 건너뜀
+4. AI에 **잠글 때 사진(URL) + 지금 사진** 두 장과 장소 설명을 보내 같은 자리인지 판정. 같으면 원문·잠근 날짜·오늘 날짜로 재회 리포트도 같은 호출에서 작성
+5. `revisits` insert, 같으면 `memories.status = opened`, `opened_at = now()`
 - mock: `sameSpot: true, confidence: 0.8`
 
 ## 7. `GET /api/places/[slug]/layer?lang=en` — 장소의 기억 층 (공개 벽)
