@@ -22,7 +22,9 @@ export const runtime = "nodejs";
 
 const MEDIUMS = ["lock", "letter", "capsule"] as const;
 const VISIBILITIES = ["private", "public_anonymous"] as const;
-const UNLOCK_TYPES = ["date", "revisit", "together"] as const;
+const UNLOCK_TYPES = ["date", "season", "revisit", "together"] as const;
+const RECORD_TYPES = ["wish", "retro", "letter"] as const;
+const TARGETS = ["self", "partner", "family", "friend", "faraway"] as const;
 
 const MAX_CONTENT = 5000;
 
@@ -39,6 +41,54 @@ function parseKeywords(v: unknown): string[] {
     .map((k) => k.trim().slice(0, 40))
     .filter(Boolean)
     .slice(0, 10);
+}
+
+/* ── draft(3번 /api/memories/draft 응답) → memories 컬럼 (docs/API.md #4 매핑표) ──
+ * draft 는 브라우저를 거쳐 오므로 그대로 믿지 않는다. 화면이 멈추지 않도록
+ * 이상한 값은 400 대신 null / 빈 값으로 정리하고, ai_card 는 알려진 키만 길이 제한해서 저장한다. */
+
+function isObj(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function cleanStr(v: unknown, max: number): string | null {
+  return typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null;
+}
+
+function oneOf<T extends string>(v: unknown, allowed: readonly T[]): T | null {
+  return typeof v === "string" && (allowed as readonly string[]).includes(v) ? (v as T) : null;
+}
+
+function parseDraft(raw: unknown, legacy: Record<string, unknown>) {
+  const d = isObj(raw) ? raw : {};
+  const fortune = isObj(d.fortune) ? d.fortune : {};
+  const card = isObj(d.card) ? d.card : {};
+  const engraving = isObj(d.engraving) ? d.engraving : {};
+
+  const aiCard: Record<string, unknown> = {};
+  for (const [key, max] of [["color", 20], ["shape", 30], ["pattern", 30]] as const) {
+    const s = cleanStr(card[key], max);
+    if (s) aiCard[key] = s;
+  }
+  if (typeof card.glow === "number" && Number.isFinite(card.glow)) aiCard.glow = Math.min(1, Math.max(0, card.glow));
+  const mine = cleanStr(engraving.mine, 200);
+  const ko = cleanStr(engraving.ko, 200);
+  if (mine || ko) aiCard.engraving = { ...(mine ? { mine } : {}), ...(ko ? { ko } : {}) };
+  const fortuneSub = cleanStr(fortune.sub, 30);
+  if (fortuneSub) aiCard.fortuneSub = fortuneSub;
+  const timeHint = cleanStr(d.timeHint, 100);
+  if (timeHint) aiCard.timeHint = timeHint;
+
+  return {
+    // 예전 형식(최상위 title/keywords/emotion)도 계속 받는다
+    ai_title: cleanStr(d.title ?? legacy.title, 200),
+    ai_keywords: parseKeywords(d.keywords ?? legacy.keywords),
+    ai_emotion: cleanStr(d.emotion ?? legacy.emotion, 40),
+    record_type: oneOf(d.recordType, RECORD_TYPES),
+    fortune: cleanStr(fortune.main, 30),
+    target: oneOf(d.target, TARGETS),
+    ai_card: aiCard,
+  };
 }
 
 export async function POST(req: Request) {
@@ -59,16 +109,18 @@ export async function POST(req: Request) {
 
     const photoDataUrl = optionalString(body, "photoDataUrl");
 
-    // date 타입만 unlockAt 사용. 나머지는 null 로 정리.
+    // date(그날 이후) · season(다음 계절)만 unlockAt 사용. 나머지는 null 로 정리.
     let unlockAt: string | null = null;
-    if (unlockType === "date") {
+    if (unlockType === "date" || unlockType === "season") {
       const raw = optionalString(body, "unlockAt");
       const t = raw ? new Date(raw) : null;
       if (!t || Number.isNaN(t.getTime())) {
-        throw new HttpError(400, "unlockType 이 date 이면 올바른 unlockAt(ISO 날짜)이 필요해요");
+        throw new HttpError(400, `unlockType 이 ${unlockType} 이면 올바른 unlockAt(ISO 날짜)이 필요해요`);
       }
       unlockAt = t.toISOString();
     }
+
+    const draft = parseDraft(body.draft, body);
 
     const parentMemoryId = body.parentMemoryId ?? null;
     if (parentMemoryId !== null && !isUuid(parentMemoryId)) {
@@ -105,9 +157,7 @@ export async function POST(req: Request) {
         content,
         photo_url: photoUrl,
         language,
-        ai_title: optionalString(body, "title")?.trim().slice(0, 200) ?? null,
-        ai_keywords: parseKeywords(body.keywords),
-        ai_emotion: optionalString(body, "emotion")?.trim().slice(0, 40) ?? null,
+        ...draft, // ai_title, ai_keywords, ai_emotion, record_type, fortune, target, ai_card
         visibility,
         unlock_type: unlockType,
         unlock_at: unlockAt,

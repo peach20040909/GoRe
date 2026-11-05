@@ -43,7 +43,12 @@ export type MemoryRow = {
   ai_keywords: string[];
   ai_emotion: string | null;
   visibility: "private" | "public_anonymous";
-  unlock_type: "date" | "revisit" | "together";
+  // 기억 카드 (supabase/migrations/002_memory_card.sql)
+  record_type: string | null; // wish | retro | letter
+  fortune: string | null; // 운 카테고리(주)
+  target: string | null; // self | partner | family | friend | faraway
+  ai_card: Record<string, unknown>; // 카드 디자인 값·각인 문구
+  unlock_type: "date" | "season" | "revisit" | "together";
   unlock_at: string | null;
   unlock_note: string | null;
   status: "locked" | "opened";
