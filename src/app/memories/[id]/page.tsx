@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MemoryCard } from "@/components/MemoryCard";
+import { Header } from "@/components/ds";
 import { api, getPosition, resizeImage } from "@/lib/client";
 import { goriAsset, goriById } from "@/lib/goris";
 import { loadMemories, type MemoryItem } from "@/lib/memories";
@@ -61,10 +62,11 @@ export default function MemoryDetail({ params }: { params: Promise<{ id: string 
   const opened = item.status === "opened";
 
   return (
-    <div className="mx-auto max-w-md pb-10 pt-6">
-      <Link href="/memories" className="text-sm text-muted">← 추억</Link>
-      <p className="mt-3 text-sm font-semibold text-brand">{item.placeName} · {g?.name}</p>
-      <h1 className="text-2xl font-extrabold">{item.title ?? "기억"}</h1>
+    <div className="pb-10">
+      <Header title="추억" back="/memories" />
+      <div className="px-6">
+      <p className="t-caption mt-2 text-muted">{item.placeName} · {g?.name}</p>
+      <h1 className="t-title">{item.title ?? "기억"}</h1>
 
       <div className="mt-4">
         <MemoryCard
@@ -107,6 +109,7 @@ export default function MemoryDetail({ params }: { params: Promise<{ id: string 
           {msg && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-700">{msg}</p>}
         </section>
       )}
+      </div>
     </div>
   );
 }

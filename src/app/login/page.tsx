@@ -46,7 +46,7 @@ export default function LoginPage() {
 
   if (mode === "done")
     return (
-      <div className="mx-auto max-w-sm pt-16 text-center">
+      <div className="mx-auto max-w-sm px-6 pt-16 text-center">
         <p className="text-sm font-semibold text-brand">GO AGAIN. RECONNECT.</p>
         <h1 className="mt-2 text-2xl font-extrabold">회원가입이 완료됐어요</h1>
         <p className="mt-2 text-muted">이제 장소에 기억을 맡기고, 다시 와서 꺼내 보세요.</p>
@@ -55,7 +55,7 @@ export default function LoginPage() {
     );
 
   return (
-    <div className="mx-auto max-w-sm pt-12">
+    <div className="mx-auto max-w-sm px-6 pt-12">
       <p className="text-sm font-semibold text-brand">GO AGAIN. RECONNECT.</p>
       <h1 className="mt-1 text-2xl font-extrabold">{mode === "login" ? "로그인" : "회원가입"}</h1>
       <form onSubmit={submit} className="mt-6 flex flex-col gap-3" noValidate>

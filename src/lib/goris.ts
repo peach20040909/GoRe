@@ -1,4 +1,4 @@
-// 고리(매개체) 15종 카탈로그. 출처: 팀 제작 자료(기록문화_타임캡슐_15종, 제작_레퍼런스.md)
+// 고리(매개체) 18종 카탈로그. 출처: 팀 제작 자료(기록문화_타임캡슐_15종, 제작_레퍼런스.md)
 // 파일: public/goris/<id>/sealed.webp · opened.webp · model.glb (Blender 원본에서 변환, 가장 긴 변 30cm)
 import type { Medium } from "@/components/MemoryCard";
 
@@ -65,6 +65,15 @@ export const GORIS: Gori[] = [
   { no: 15, id: "memorial-letter", name: "추모 편지", place: "서대문형무소역사관", placeSlug: "seodaemun-prison", cardShape: "paper",
     description: "역사관의 붉은 벽돌과 전시 기록물에서 색과 형태를 가져온 편지예요. 전시를 보고 오래 기억하고 싶은 이름이나 마음을 한 줄 남겨보세요.",
     howToOpen: "봉투의 접은 부분을 열어 방문자가 쓴 추모 문장을 꺼내요." },
+  { no: 16, id: "myongji-horse", name: "백마 자물쇠", place: "명지대학교 인문캠퍼스", placeSlug: "demo-hall", cardShape: "lock",
+    description: "명지대를 상징하는 흰 백마를 파란 자물쇠에 새겼어요. 캠퍼스에서 오래 기억하고 싶은 하루를 사진과 한 줄로 남겨보세요.",
+    howToOpen: "자물쇠 고리를 들어 올려 열어요." },
+  { no: 17, id: "dongnimmun-arch", name: "돌 아치 고리", place: "서울 독립문", placeSlug: "dongnimmun", cardShape: "lock",
+    description: "독립문의 열린 돌 아치와 안쪽의 붉은 벽돌을 본뜬 고리예요. 아치 너머로 보이던 풍경과 그 자리에서 든 생각을 담아보세요.",
+    howToOpen: "아치 안쪽이 열리며 그날의 기록이 드러나요." },
+  { no: 18, id: "gyeongbok-borok", name: "왕실 보록 자물쇠", place: "경복궁", placeSlug: "gyeongbokgung", cardShape: "lock",
+    description: "1726년 선의왕후의 옥도장을 보관하던 함의 자물쇠를 본떴어요. 꽃과 덩굴 무늬가 새겨진 자물쇠에 경복궁에서 보낸 하루를 잠가 두세요.",
+    howToOpen: "보록 자물쇠를 풀어 함을 열어요." },
 ];
 
 export const DEFAULT_GORI = GORIS.find((g) => g.id === "love-lock")!;
