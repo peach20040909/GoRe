@@ -39,6 +39,7 @@ export function LanguageSwitcher({ inverse = false }: { inverse?: boolean }) {
   const { language, setLanguage, t } = useLanguage();
   const trigger = useRef<HTMLButtonElement>(null);
   const options = useRef<(HTMLButtonElement | null)[]>([]);
+  const menu = useRef<HTMLDivElement>(null);
   const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(null);
   const menuId = useId();
   const close = useCallback(() => { setAnchor(null); trigger.current?.focus(); }, []);
@@ -46,9 +47,14 @@ export function LanguageSwitcher({ inverse = false }: { inverse?: boolean }) {
     if (!anchor) return;
     options.current[LANGUAGES.indexOf(language)]?.focus();
     const dismiss = () => setAnchor(null);
+    const dismissOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && !trigger.current?.contains(target) && !menu.current?.contains(target)) setAnchor(null);
+    };
+    document.addEventListener("pointerdown", dismissOutside);
     window.addEventListener("resize", dismiss);
     window.addEventListener("scroll", dismiss, true);
-    return () => { window.removeEventListener("resize", dismiss); window.removeEventListener("scroll", dismiss, true); };
+    return () => { document.removeEventListener("pointerdown", dismissOutside); window.removeEventListener("resize", dismiss); window.removeEventListener("scroll", dismiss, true); };
   }, [anchor, language]);
   return (
     <>
@@ -65,8 +71,7 @@ export function LanguageSwitcher({ inverse = false }: { inverse?: boolean }) {
       </button>
       {anchor && createPortal(
         <>
-          <div className="fixed inset-0 z-[80]" aria-hidden="true" onPointerDown={close} />
-          <div id={menuId} role="menu" aria-label="Language / 언어 / 言語 / 语言" className="fixed z-[90] w-[200px] rounded-[18px] border border-line bg-surface p-1.5 shadow-[0_12px_40px_rgba(36,39,56,0.16)]" style={anchor}
+          <div ref={menu} id={menuId} role="menu" aria-label="Language / 언어 / 言語 / 语言" className="fixed z-[90] w-[200px] rounded-[18px] border border-line bg-surface p-1.5 shadow-[0_12px_40px_rgba(36,39,56,0.16)]" style={anchor}
             onKeyDown={(event) => {
               const current = options.current.findIndex((option) => option === document.activeElement);
               if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); close(); }
