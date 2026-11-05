@@ -21,6 +21,12 @@ type Step = "auth" | "model" | "write" | "unlock" | "ar" | "done";
 const BACK: Partial<Record<Step, Step>> = { model: "auth", write: "model", unlock: "write", ar: "unlock" };
 const UNLOCK_TITLE: Record<string, string> = { revisit: "이 장소에서 열기", together: "같이 열기", date: "정한 날에 열기", season: "그 계절이 오면 열기" };
 
+// 받침 있으면 "이", 없으면 "가" (경복궁이 / 홍제폭포가). 한글이 아니면 "가"
+const ga = (word: string) => {
+  const c = word.trim().charCodeAt(word.trim().length - 1);
+  return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0 ? "이" : "가";
+};
+
 /* eslint-disable @next/next/no-img-element */
 export default function GoriFlow({ params }: { params: Promise<{ slug: string }> }) {
   const { t, locale } = useLanguage();
@@ -35,6 +41,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
   const [step, setStep] = useState<Step>("auth");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [warn, setWarn] = useState<{ title: string; desc: string } | null>(null); // 장소 확인 실패 경고 팝업
   const [photo, setPhoto] = useState<string | null>(null);
   const [photo2, setPhoto2] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -68,14 +75,20 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
       const img = file ? await resizeImage(file) : cam.current?.capture();
       if (!img) throw new Error(t("카메라를 쓸 수 없어요. 사진을 골라 주세요"));
       setPhoto(img);
+      const name = t(place?.name_ko ?? gori.place);
+      const notHere = t("여기는 {place}{ga} 아니에요!", { place: name, ga: ga(name) });
       if (!demo) {
         if (place?.lat == null || place.lng == null) throw new Error(t("이 장소의 고정 지점이 아직 없어요"));
         const pos = await getPosition();
-        if (!pos) throw new Error(t("위치 권한을 허용해야 고리를 걸 수 있어요"));
+        if (!pos) return setWarn({ title: t("위치를 확인할 수 없어요"), desc: t("위치 권한을 허용한 뒤 다시 시도해 주세요.") });
         const d = Math.round(distanceM(pos, { lat: place.lat, lng: place.lng }));
-        if (d > place.radius_m) throw new Error(t("{place}에서 {distance}m 떨어져 있어요. {radius}m 안으로 와 주세요", {place: t(place.name_ko), distance: d, radius: place.radius_m}));
+        if (d > place.radius_m)
+          return setWarn({ title: notHere, desc: t("{place}에서 {distance}m 떨어져 있어요. {radius}m 안으로 와서 다시 찍어 주세요.", { place: name, distance: d, radius: place.radius_m }) });
       }
-      await api("/api/places/identify", { imageDataUrl: img }).catch(() => null); // 장소 인식은 참고용
+      // 사진 인식: 다른 등록 장소로 또렷하게 보이면 막고 경고. 알아보기 어려운 사진(실내 등)은 GPS를 믿고 통과
+      const seen = await api<{ slug: string | null; confidence: number }>("/api/places/identify", { imageDataUrl: img }).catch(() => null);
+      if (!demo && seen?.slug && seen.slug !== slug && seen.confidence >= 0.6)
+        return setWarn({ title: notHere, desc: t("사진 속 풍경이 이 장소와 달라 보여요. 그 자리를 비추고 다시 찍어 주세요.") });
       go("model");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("인증하지 못했어요"));
@@ -138,8 +151,8 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
         <Header title={t("고리")} />
         <div className="relative mx-0 h-[calc(100dvh-56px-92px-76px)] min-h-[360px]">
           <CameraFeed ref={cam} />
-          {/* 카메라 화면 위 안내 문구: 반투명 흐림 판 위에 띄움 */}
-          <div className="relative bg-white/70 px-6 pb-4 pt-4 backdrop-blur-md">
+          {/* 카메라 화면 위 안내 문구: 홈 지도 제목처럼 위에서 아래로 투명해지는 그라데이션 위에 띄움 */}
+          <div className="pointer-events-none relative bg-gradient-to-b from-white/95 via-white/75 to-transparent px-6 pb-12 pt-4">
             <p className="t-heading">{t("이 장소에 고리를 걸어요")}</p>
             <p className="t-label mt-2 text-muted">{t("카메라로 지금 머무는 장소를 비춰주세요.")}</p>
           </div>
@@ -153,9 +166,20 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
           <button className="btn shrink-0 text-sm" disabled={!!busy} onClick={() => (cam.current?.live ? verify() : document.getElementById("auth-file")?.click())}>
             {busy ? t("확인 중…") : t("자물쇠 걸기")}
           </button>
-          <input id="auth-file" type="file" accept="image/*" capture="environment" hidden onChange={(e) => verify(e.target.files?.[0])} />
+          <input id="auth-file" type="file" accept="image/*" capture="environment" hidden onChange={(e) => { verify(e.target.files?.[0]); e.target.value = ""; }} />
         </div>
         <BottomNav active="gori" />
+        {/* 장소 확인 실패 경고: "여기는 ○○가 아니에요!" */}
+        {warn && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6" role="alertdialog" aria-modal="true" aria-labelledby="warn-title">
+            <div className="w-full max-w-[342px] rounded-3xl bg-surface p-6 text-center shadow-xl">
+              <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#fbeaea] text-3xl" aria-hidden>⚠️</div>
+              <p id="warn-title" className="t-heading mt-4 text-[var(--error)]">{warn.title}</p>
+              <p className="t-label mt-3 text-muted">{warn.desc}</p>
+              <button className="btn mt-6 w-full" onClick={() => setWarn(null)}>{t("다시 찍기")}</button>
+            </div>
+          </div>
+        )}
       </div>
     );
 

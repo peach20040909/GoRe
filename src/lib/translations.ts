@@ -22,6 +22,11 @@ const rows = `
 이메일 또는 비밀번호를 확인해 주세요|Check your email or password.|メールアドレスとパスワードを確認してください。|请检查邮箱或密码。
 가입하지 못했어요. 다시 시도해 주세요.|Couldn't create the account. Please try again.|登録できませんでした。もう一度お試しください。|无法注册，请重试。
 서버 오류가 발생했어요. 잠시 후 다시 시도해 주세요.|A server error occurred. Please try again shortly.|サーバーエラーです。しばらくしてからお試しください。|服务器发生错误，请稍后重试。
+여기는 {place}{ga} 아니에요!|This isn't {place}!|ここは{place}ではありません！|这里不是{place}！
+{place}에서 {distance}m 떨어져 있어요. {radius}m 안으로 와서 다시 찍어 주세요.|You're {distance}m from {place}. Come within {radius}m and try again.|{place}から{distance}m離れています。{radius}m以内に来て、もう一度撮ってください。|您距离{place}{distance}米。请走到{radius}米以内再拍一次。
+사진 속 풍경이 이 장소와 달라 보여요. 그 자리를 비추고 다시 찍어 주세요.|The view in your photo doesn't match this place. Point your camera at the spot and try again.|写真の風景がこの場所と違うようです。その場所を映して、もう一度撮ってください。|照片中的景色与此地点不符。请对准该地点后重新拍摄。
+위치 권한을 허용한 뒤 다시 시도해 주세요.|Allow location access and try again.|位置情報の利用を許可して、もう一度お試しください。|请允许位置权限后重试。
+다시 찍기|Retake|撮り直す|重新拍摄
 인터넷 연결을 확인하고 다시 시도해 주세요|Check your internet connection and try again.|インターネット接続を確認して、もう一度お試しください。|请检查网络连接后重试。
 AR로 거치대 놓아 보기|Place the stand in AR|ARで掛け台を置く|通过AR放置挂架
 고리 거치대|Gori stand|ゴリの掛け台|Gori挂架
