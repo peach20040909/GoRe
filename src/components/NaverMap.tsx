@@ -55,9 +55,10 @@ type Props = {
   className?: string;
   height?: string;
   square?: boolean;
+  compact?: boolean;
 };
 
-export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, className, height = "min(70vh, 480px)", square }: Props) {
+export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, className, height = "min(70vh, 480px)", square, compact = false }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const fit = useRef<((bottom: number) => void) | null>(null);
   const inset = useRef(bottomInset);
@@ -68,17 +69,20 @@ export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, classN
 
   useEffect(() => {
     if (!CLIENT_ID || !el.current) return;
+    let disposed = false;
+    let map: InstanceType<NaverMaps["Map"]> | undefined;
     window.navermap_authFailure = () => setError("지도 인증에 실패했어요. 네이버 콘솔의 웹 서비스 URL을 확인해 주세요");
     const pts = places.filter((p) => p.lat != null && p.lng != null);
     loadSdk()
       .then((maps) => {
+        if (disposed || !el.current) return;
         const center = pts[0] ? new maps.LatLng(pts[0].lat!, pts[0].lng!) : new maps.LatLng(37.5791, 126.9368);
-        const map = new maps.Map(el.current!, { center, zoom: 14 });
+        map = new maps.Map(el.current, { center, zoom: 14 });
         if (pts.length > 1) {
           const b = new maps.LatLngBounds(center, center);
           pts.forEach((p) => b.extend(new maps.LatLng(p.lat!, p.lng!)));
           // 위: 지도 위에 띄운 제목 + 핀 높이 / 좌우: 이름표가 안 잘리게 / 아래: 시트에 가리지 않게
-          fit.current = (bottom) => map.fitBounds(b, { top: 150, right: 70, bottom: 30 + bottom, left: 70 });
+          fit.current = (bottom) => map?.fitBounds(b, { top: compact ? 100 : 150, right: 70, bottom: (compact ? 50 : 30) + bottom, left: 70 });
           fit.current(inset.current);
         }
         let markerAt = 0; // 핀을 누를 때 지도 클릭이 같이 오면 무시
@@ -99,7 +103,8 @@ export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, classN
         });
       })
       .catch((e: Error) => setError(e.message));
-  }, [places, onSelect]);
+    return () => { disposed = true; fit.current = null; map?.destroy?.(); };
+  }, [places, onSelect, compact]);
 
   useEffect(() => fit.current?.(bottomInset), [bottomInset]);
 

@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
-/* 디자인 토큰 — Figma "DS / Foundations · MVP v1.0" (중립 UI, 장소 테마는 캐릭터로) */
+/* Figma 테마 바레이션 / 코발트 커넥트 (493:4113) */
 :root {
   --surface-base: #ffffff;
-  --surface-canvas: #f5f5f5;
-  --surface-subtle: #ececec;
+  --surface-canvas: #f5f6fc;
+  --surface-subtle: #eceffd;
   --surface-letter-paper: #fcfaf4;
-  --border-default: #dedede;
-  --border-strong: #c7c7c7;
-  --text-primary: #171717;
+  --border-default: #dfe2f0;
+  --border-strong: #c7cce4;
+  --text-primary: #242738;
   --text-secondary: #4d4d4d;
   --text-tertiary: #686868;
-  --action-primary: #171717;
-  --accent: #4562e8;
+  --action-primary: #4f63e8;
+  --accent: #4f63e8;
   --error: #b93838;
   --portrait-bg: #f5f0e9;
 
@@ -22,9 +22,9 @@
   --text: var(--text-primary);
   --muted: var(--text-secondary);
   --line: var(--border-default);
-  --brand: var(--text-primary);
+  --brand: var(--action-primary);
   --brand-ink: #ffffff;
-  --brand-soft: var(--surface-canvas);
+  --brand-soft: var(--surface-subtle);
   --radius: 16px;
 }
 
@@ -66,6 +66,13 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
 .btn:active { transform: scale(.98); opacity: .85; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 .btn-ghost { background: var(--surface-base); color: var(--text-primary); border: 1px solid var(--border-default); }
+
+.character-banner { position: relative; overflow: hidden; border-radius: 24px; }
+.character-banner img { position: absolute; object-fit: contain; pointer-events: none; }
+.home-hero { position: relative; overflow: hidden; color: white; background: var(--action-primary); }
+.home-hero::before { content: ""; position: absolute; inset: 0; background: url("/theme/home-cobalt.svg") center / cover no-repeat; pointer-events: none; }
+.home-hero .hero-friend { position: absolute; width: 46%; height: 178px; right: 5%; top: 58px; object-fit: contain; pointer-events: none; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
 @keyframes shimmer { 100% { transform: translateX(100%); } }
 .skeleton { position: relative; overflow: hidden; background: var(--surface-subtle); border-radius: 12px; }

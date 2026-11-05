@@ -41,7 +41,11 @@ export default function MyPage() {
     <div className="min-h-dvh">
       <Header title="마이" />
       <div className="px-6 pb-6">
-        <div className="mt-2 flex items-center justify-between">
+        <div className="character-banner mt-2 h-[148px] bg-accent px-5 py-6 text-white">
+          <p className="relative z-10 text-[21px] font-bold leading-[29px]">쌓인 마음,<br />나만의 여행 기록</p>
+          <img src="/theme/pink-friend.png" alt="" className="-right-1.5 top-5 h-32 w-32" />
+        </div>
+        <div className="mt-6 flex items-center justify-between gap-3">
           <p className="t-title">안녕하세요, {name}님</p>
           <Character slug="demo-hall" size={48} />
         </div>

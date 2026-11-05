@@ -26,11 +26,15 @@ export default function MemoriesPage() {
   // 걸었던 고리 위치들 → 필터 칩
   const places = useMemo(() => [...new Map((items ?? []).filter((i) => i.placeSlug).map((i) => [i.placeSlug!, i.placeName ?? ""])).entries()], [items]);
   const shown = (items ?? []).filter((it) => !filter || it.placeSlug === filter);
-  const chip = (on: boolean) => `t-strong h-8 shrink-0 rounded-lg px-3 ${on ? "bg-text text-white" : "border border-[#e0e1e6] text-muted"}`;
+  const chip = (on: boolean) => `t-strong h-8 shrink-0 rounded-lg px-3 ${on ? "bg-accent text-white" : "border border-line text-muted"}`;
 
   return (
     <div className="min-h-dvh">
       <Header title="추억" />
+      <div className="character-banner mx-6 mb-5 mt-2 h-[92px] bg-subtle px-5 py-4">
+        <p className="relative z-10 text-[19px] font-bold leading-[27px]">다시 꺼내 보는<br />우리의 순간</p>
+        <img src="/theme/pink-friend.png" alt="" className="-right-0.5 top-1 h-[90px] w-[90px]" />
+      </div>
       <div className="flex gap-2 overflow-x-auto px-6 pb-4 pt-2.5">
         <button className={chip(!filter)} onClick={() => setFilter(null)}>전체</button>
         {places.map(([slug, name]) => (

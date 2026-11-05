@@ -21,6 +21,7 @@ export default function Home() {
   const [places, setPlaces] = useState<MapPlace[] | null>(null);
   const [sheet, setSheet] = useState<"peek" | "list">("peek");
   const [selected, setSelected] = useState<MapPlace | null>(null);
+  const [exploring, setExploring] = useState(false);
   const touchY = useRef(0);
 
   useEffect(() => {
@@ -30,37 +31,54 @@ export default function Home() {
       .catch(() => setPlaces([]));
   }, []);
 
-  const select = useCallback((slug: string) => setSelected((places ?? []).find((p) => p.slug === slug) ?? null), [places]);
+  const select = useCallback((slug: string) => {
+    setSelected((places ?? []).find((p) => p.slug === slug) ?? null);
+    setExploring(true);
+  }, [places]);
   const open = selected ? "detail" : sheet;
   const g = selected && goriAsset(mediaFor(selected.slug).goriId);
 
   return (
     <div className="relative">
-      <Header title="홈" />
+      {exploring ? <Header title="홈" back={() => { setExploring(false); setSelected(null); setSheet("peek"); }} /> : (
+        <div className="home-hero pb-8">
+          <Header title="홈" inverse />
+          <div className="relative z-10 px-6 pb-2 pt-3">
+            <h1 className="t-title relative z-10 w-[62%]">마음을 남기는<br />가장 가까운 여행</h1>
+            <p className="t-caption relative z-10 mt-2 text-white/90">오늘도 우리만의 장소로</p>
+            <button className="relative z-10 mt-6 h-10 rounded-xl bg-white px-4 text-base font-medium text-accent" onClick={() => { setExploring(true); setSheet("list"); }}>주변 둘러보기</button>
+          </div>
+          <img src="/theme/pink-friend.png" alt="" className="hero-friend" />
+        </div>
+      )}
+      {!exploring && <h2 className="t-sub px-6 pb-3 pt-6">우리 동네, 새로운 기억</h2>}
       {/* 지도는 헤더 아래 꽉 차게, 제목은 지도 위에 띄움 (Figma 홈 · 지도 기본) */}
-      <div className="relative isolate">
+      <div className={`relative isolate ${exploring ? "" : "mx-6 overflow-hidden rounded-3xl"}`}>
         {places ? (
           <NaverMap
+            key={exploring ? "explore" : "preview"}
             places={places}
             onSelect={select}
             onMapClick={() => {
               setSelected(null);
               setSheet("peek");
             }}
-            bottomInset={open === "peek" ? 0 : (open === "detail" ? 480 : 416) - 90} // 펼친 시트가 지도를 덮는 높이
-            height={MAP_H}
+            compact={!exploring}
+            bottomInset={!exploring || open === "peek" ? 0 : (open === "detail" ? 480 : 416) - 90} // 펼친 시트가 지도를 덮는 높이
+            height={exploring ? MAP_H : "246px"}
             square
           />
-        ) :<div className="skeleton !rounded-none" style={{ height: MAP_H }} />}
-        <h2 className="t-title pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 via-white/80 to-transparent px-6 pb-10 pt-4">
+        ) :<div className="skeleton !rounded-none" style={{ height: exploring ? MAP_H : "246px" }} />}
+        {exploring && <h2 className="t-title pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 via-white/80 to-transparent px-6 pb-10 pt-4">
           오늘의 고리를
           <br />
           어디에 남길까요?
-        </h2>
+        </h2>}
       </div>
+      {!exploring && <button className="t-label mx-6 mb-4 mt-4 flex min-h-11 items-center gap-1" onClick={() => { setExploring(true); setSheet("list"); }}>가까운 장소 더 보기 <span aria-hidden>›</span></button>}
 
       {/* 바텀 시트 (DS / Nearby places sheet · DS / Place detail sheet). 손잡이를 누르거나 위로 밀면 올라옴 */}
-      <section
+      {exploring && <section
         className={`fixed inset-x-0 bottom-[76px] z-20 mx-auto max-w-[430px] rounded-t-3xl bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-transform duration-300 ${open === "detail" ? "h-[480px] max-h-[calc(100dvh-132px)] overflow-y-auto" : "h-[416px]"}`}
         style={{ transform: open === "peek" ? "translateY(326px)" : "none" }}
         onTouchStart={(e) => (touchY.current = e.touches[0].clientY)}
@@ -118,7 +136,7 @@ export default function Home() {
             <Link href={`/gori/${selected.slug}`} className="btn mt-6 w-full">여기에 고리 걸기</Link>
           </div>
         )}
-      </section>
+      </section>}
       <BottomNav active="home" />
     </div>
   );

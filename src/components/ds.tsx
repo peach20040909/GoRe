@@ -4,10 +4,10 @@ import { characterFor } from "@/lib/media";
 
 /* eslint-disable @next/next/no-img-element */
 
-export function Header({ title, back }: { title: string; back?: string | (() => void) }) {
+export function Header({ title, back, inverse = false }: { title: string; back?: string | (() => void); inverse?: boolean }) {
   const icon = <img src="/ds/icon-back.svg" alt="" width={24} height={24} />;
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center bg-surface px-6">
+    <header className={`sticky top-0 z-20 flex h-14 items-center px-6 ${inverse ? "bg-transparent text-white" : "bg-surface"}`}>
       {back &&
         (typeof back === "string" ? (
           <Link href={back} aria-label="뒤로" className="-ml-[10px] flex size-11 items-center justify-center">{icon}</Link>
@@ -67,10 +67,10 @@ export function OptionRow({ title, desc, selected, onSelect }: { title: string; 
       role="radio"
       aria-checked={selected}
       onClick={onSelect}
-      className={`flex min-h-20 w-full items-center gap-3 rounded-xl p-4 text-left ${selected ? "border-[1.5px] border-text bg-canvas" : "border border-line bg-surface"}`}
+      className={`flex min-h-20 w-full items-center gap-3 rounded-xl p-4 text-left ${selected ? "border-[1.5px] border-accent bg-canvas" : "border border-line bg-surface"}`}
     >
-      <span className={`flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] bg-surface ${selected ? "border-text" : "border-faint"}`}>
-        {selected && <span className="size-2.5 rounded-full bg-text" />}
+      <span className={`flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] bg-surface ${selected ? "border-accent" : "border-faint"}`}>
+        {selected && <span className="size-2.5 rounded-full bg-accent" />}
       </span>
       <span className="flex flex-col gap-1">
         <span className="t-strong">{title}</span>
