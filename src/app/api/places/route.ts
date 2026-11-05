@@ -13,12 +13,13 @@ type PlaceListItem = {
   lat: number | null; // 좌표가 아직 없는 장소는 null (GPS 자동 입장에서 제외)
   lng: number | null;
   radius_m: number;
+  public_memories?: { count: number }[]; // 지도 핀의 "기억 N개" (숨김 처리된 것 제외)
 };
 
 export async function GET() {
   try {
     const places = await db<PlaceListItem[]>(
-      "/places?select=slug,name_ko,name_en,lat,lng,radius_m&order=created_at.asc,slug.asc",
+      "/places?select=slug,name_ko,name_en,lat,lng,radius_m,public_memories(count)&public_memories.hidden=eq.false&order=created_at.asc,slug.asc",
     );
     // 문서에 있는 필드만 명시적으로 내려준다 (description 등 다른 컬럼이 섞여 나가지 않게)
     return NextResponse.json({
@@ -29,6 +30,7 @@ export async function GET() {
         lat: p.lat ?? null,
         lng: p.lng ?? null,
         radius_m: p.radius_m,
+        memoryCount: p.public_memories?.[0]?.count ?? 0,
       })),
     });
   } catch (e) {
