@@ -165,8 +165,8 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
         </div>
         {/* 걸린 고리 */}
         <div
-          className="absolute left-1/2 top-[22%] size-[220px] -translate-x-1/2 transition-all duration-700"
-          style={{ opacity: hang === "hang" || hang === "leave" ? 1 : 0, transform: `translateX(-50%) translateY(${hang === "hang" || hang === "leave" ? 0 : -120}px)` }}
+          className="absolute inset-x-0 top-[14%] h-[220px] transition-all duration-700"
+          style={{ opacity: hang === "hang" || hang === "leave" ? 1 : 0, transform: `translateY(${hang === "hang" || hang === "leave" ? 0 : -120}px)` }}
         >
           <div className={hang === "hang" ? "animate-[swing_1.2s_ease-out]" : ""} style={{ transformOrigin: "50% 0" }}>
             <ModelViewer src={asset.model} alt={gori.name} arEnabled={false} style={{ height: 220, background: "transparent" }} />
@@ -178,7 +178,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
           alt=""
           className="pointer-events-none absolute h-[270px] transition-all ease-in-out"
           style={{
-            top: hang === "idle" ? "52%" : "38%",
+            top: hang === "idle" ? "52%" : "44%",
             left: hang === "idle" ? -55 : hang === "leave" ? "110%" : "50%",
             transform: `translateX(${hang === "idle" ? 0 : "-50%"}) ${hang === "walk" ? "rotate(-4deg)" : ""}`,
             transitionDuration: hang === "leave" ? "900ms" : "1100ms",
