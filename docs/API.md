@@ -258,3 +258,9 @@ alter table users add column if not exists password_hash text;
 서버 API 없음. 브라우저에서 `localStorage.removeItem("ms_device_id")`
 
 ponytail: 토큰이 만료되지 않고 로그인 시도 횟수 제한도 없음 — MVP 한계. 정식 서비스에선 Supabase Auth로 옮기고 시도 제한 추가.
+
+### 화면 규칙: 로그인은 메뉴에 두지 않는다
+- 메뉴 트리에 로그인·회원가입 항목 없음. 기능(9-1~9-3 API)만 둔다
+- 로그인 창은 필요한 순간에만 뜬다
+  1. **기억을 잠글 때**: "1년 뒤 다른 기기에서도 열 수 있게 이메일로 저장할까요?" → 가입/로그인 후 잠금
+  2. **다시 와서 열 때**: 이 기기에 기억이 없으면 "로그인해서 내 기억 불러오기"
