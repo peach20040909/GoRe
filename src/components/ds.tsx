@@ -42,10 +42,8 @@ export function BottomNav({ active }: { active: "home" | "memories" | "gori" | "
             </>
           );
           const cls = `flex h-[60px] w-[70px] flex-col items-center justify-center gap-1 rounded-xl ${on ? "bg-subtle" : ""}`;
-          return t.href ? (
+          return (
             <Link key={t.key} href={t.href} className={cls} aria-current={on ? "page" : undefined}>{body}</Link>
-          ) : (
-            <span key={t.key} className={`${cls} opacity-60`} aria-disabled>{body}</span>
           );
         })}
       </nav>
