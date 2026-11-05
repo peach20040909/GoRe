@@ -169,16 +169,15 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
         </div>
         {stand ? (
           /* 장소 거치대: 처음부터 서 있고, 고리를 걸 때 거치대의 '고리 걸기' 애니메이션이 한 번 재생됨. AR 버튼으로 실물 크기로 놓아 볼 수 있음 */
-          <div className="absolute inset-x-0 top-[9%] h-[340px]">
+          <div className="absolute inset-x-0 top-[8%] h-[440px]">
             <ModelViewer
               src={stand.glb}
               iosSrc={stand.usdz}
               alt={`${placeName} · ${t("고리 거치대")}`}
-              arEnabled={hang === "idle"}
-              arLabel="AR로 거치대 놓아 보기"
+              arEnabled={false} // 휴대폰 기본 AR 뷰어(Quick Look 등)는 캐릭터·고리 걸기 연출을 못 보여 줘서, 이 카메라 화면을 AR로 씀
               play={hang === "hang" || hang === "leave"}
-              orbit="0deg 82deg auto"
-              style={{ height: 340, background: "transparent" }}
+              orbit="0deg 82deg 88%"
+              style={{ height: 440, background: "transparent" }}
             />
           </div>
         ) : (
@@ -196,10 +195,10 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
         <img
           src={characterLgFor(slug)}
           alt=""
-          className="pointer-events-none absolute h-[270px] transition-all ease-in-out"
+          className={`pointer-events-none absolute transition-all ease-in-out ${stand ? "h-[150px]" : "h-[270px]"}`}
           style={{
-            top: hang === "idle" ? "52%" : stand ? "48%" : "44%",
-            left: hang === "idle" ? -55 : hang === "leave" ? "110%" : stand ? "28%" : "50%", // 거치대가 있으면 그 앞 왼쪽에 섬
+            top: hang === "idle" ? (stand ? "60%" : "52%") : stand ? "56%" : "44%",
+            left: hang === "idle" ? (stand ? -30 : -55) : hang === "leave" ? "110%" : stand ? "22%" : "50%", // 거치대가 있으면 그 앞 왼쪽 바닥에, 거치대에 맞는 크기로 섬
             transform: `translateX(${hang === "idle" ? 0 : "-50%"}) ${hang === "walk" ? "rotate(-4deg)" : ""}`,
             transitionDuration: hang === "leave" ? "900ms" : "1100ms",
             animation: hang === "idle" ? "peek 2.4s ease-in-out infinite" : hang === "hang" ? "hop .5s ease-out 2" : undefined,

@@ -177,11 +177,12 @@ export function revisitPrompt(input: {
   lockedAt: string;
   today: string;
   hasOriginal: boolean;
+  locationVerified?: boolean;
 }) {
   return {
     system: `너는 타임캡슐을 여는 열쇠다. 다시 찾아온 사람이 처음 그 자리에 왔는지 사진으로 판정하고, 맞으면 그때와 지금을 잇는 짧은 재회 리포트를 쓴다.
 판정은 너그럽게 하되(계절·날씨·밝기·사람이 달라도 같은 장소면 같은 자리), 전혀 다른 장소면 false.
-단, 지금 사진에서 장소의 특징(건물·지형·사물)을 실제로 알아볼 수 없으면(빈 화면, 단색, 너무 어둡거나 흐림, 손가락으로 가림) 반드시 sameSpot=false, confidence 0.2 이하로 하고 reason에 다시 찍어 달라고 쓴다. 보이지 않는 것을 추측하지 않는다.
+${input.locationVerified ? "GPS로 이미 그 장소 반경 안에 있음이 확인됐다. 랜드마크가 안 보여도 된다(실내·벽·바닥·책상 등 가까이 찍은 사진도 괜찮다). 처음 사진이 있으면 그 사진과 같은 공간·사물·색감인지만 보고, 비슷하면 sameSpot=true, confidence 0.6 이상으로 준다. 처음 사진이 없으면 sameSpot=true로 본다.\n" : ""}단, 지금 사진이 아무것도 알아볼 수 없을 만큼 비어 있으면(빈 화면, 단색, 새까맣거나 심하게 흐림, 손가락으로 가림) sameSpot=false, confidence 0.2 이하로 하고 reason에 다시 찍어 달라고 쓴다. 보이지 않는 것을 추측하지 않는다.
 ${LANG_RULE(input.language)}`,
     prompt: `장소: ${input.placeName} — ${input.placeDescription}
 ${input.hasOriginal ? "첫 번째 사진: 기억을 잠글 때 찍은 사진. 두 번째 사진: 지금 다시 와서 찍은 사진." : "첨부 사진: 지금 다시 와서 찍은 사진. 처음 사진이 없으니 위 장소 설명과 맞는지로 판정."}

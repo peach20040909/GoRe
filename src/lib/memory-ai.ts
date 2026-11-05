@@ -95,6 +95,7 @@ export function judgeRevisit(input: {
   language: string;
   content: string;
   lockedAt: string;
+  locationVerified?: boolean;
 }) {
   const language = isLanguage(input.language) ? input.language : "ko";
   const t = (source: string) => translate(language, source);

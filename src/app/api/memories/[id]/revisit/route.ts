@@ -24,7 +24,8 @@ type MemoryRow = {
 
 const isCoord = (v: unknown, max: number): v is number => typeof v === "number" && Number.isFinite(v) && Math.abs(v) <= max;
 
-const SAME_SPOT_MIN = 0.5; // 판정 기준을 너그럽게 (기획서 13. 리스크)
+const SAME_SPOT_MIN = 0.35; // GPS로 장소는 확인된 뒤라 사진 판정은 너그럽게 (기획서 13. 리스크)
+const GPS_OK_MIN = 0.5; // AI가 sameSpot=false라도 이만큼 비슷하다고 보면 열어 줌
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -95,10 +96,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         language: normalizeLanguage(language ?? memory.language),
         content: memory.content,
         lockedAt: memory.created_at.slice(0, 10),
+        locationVerified: true, // 여기까지 왔으면 GPS 반경 안(또는 시연)이라 사진은 '처음 사진과 비슷한가'만 봄
       }),
       uploadPhoto(photoDataUrl).catch(() => null), // 기록용, 실패해도 판정은 진행
     ]);
-    const opened = judge.sameSpot && judge.confidence >= SAME_SPOT_MIN;
+    // 위치는 이미 확인됨 → 사진 기준은 너그럽게. 시연 모드는 발표가 끊기지 않게 항상 열림 (재회 리포트는 AI가 씀)
+    // ponytail: demo 플래그는 누구나 보낼 수 있음 — 정식 서비스에선 서버에서 막을 것
+    const opened = !!demo || (judge.sameSpot && judge.confidence >= SAME_SPOT_MIN) || judge.confidence >= GPS_OK_MIN;
 
     await db("revisits", {
       method: "POST",
