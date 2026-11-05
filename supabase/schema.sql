@@ -115,3 +115,19 @@ insert into places (slug, name_ko, name_en, lat, lng, radius_m, description) val
   ('dongnimmun', '독립문', 'Independence Gate', 37.5718896, 126.9589747, 250,
    '서대문독립공원 안의 화강암 석조 문. 개선문처럼 가운데 아치가 뚫려 있고 위에 "독립문" 글씨가 새겨져 있다. 주변에 넓은 광장과 나무, 근처에 붉은 벽돌의 서대문형무소역사관이 있다.')
 on conflict (slug) do nothing;
+-- 고리 15종의 장소 13곳 (좌표: 네이버 Geocoding, 2026-11-06)
+insert into places (slug, name_ko, name_en, lat, lng, radius_m, description) values
+  ('ansan-beacon', '안산 봉수대', 'Ansan Beacon Fire Station', 37.5756153, 126.9462351, 150, '안산 정상의 무악 동봉수대. 위쪽이 좁아지는 높은 석축, 돌 단과 사각 아궁이, 서울 도심이 내려다보인다.'),
+  ('craft-museum', '서울공예박물관', 'Seoul Museum of Craft Art', 37.5766474, 126.983379, 150, '옛 풍문여고 자리의 공예박물관. 붉은 벽돌 건물 여러 동과 마당, 보자기·조각보 등 공예품 전시가 있다.'),
+  ('eunpyeong-hanok', '은평역사한옥박물관', 'Eunpyeong History Hanok Museum', 37.6403454, 126.938022, 200, '은평한옥마을 안의 박물관. 기와지붕 한옥들과 북한산 능선, 야외 기와가마터가 보인다.'),
+  ('jingwansa', '진관사 칠성각', 'Jingwansa Temple Chilseonggak', 37.6379923, 126.9466776, 250, '북한산 자락의 사찰 진관사. 단청을 칠한 전각과 기와지붕, 녹색 문의 칠성각, 계곡과 숲이 보인다.'),
+  ('money-museum', '한국은행 화폐박물관', 'Bank of Korea Money Museum', 37.5620607, 126.9805214, 150, '옛 조선은행 본관의 석조 건물. 화강암 외벽, 돔 지붕, 아치형 창이 있는 르네상스풍 건물이고 안에 금고 모형과 화폐 전시가 있다.'),
+  ('myeongdong-theater', '명동예술극장', 'Myeongdong Theater', 37.5640461, 126.9842201, 150, '명동 거리의 옛 극장 건물. 모서리가 둥근 외관에 아치형 창이 줄지어 있고 극장 간판이 있다.'),
+  ('oil-tank-t4', '문화비축기지', 'Oil Tank Culture Park', 37.5703467, 126.8950314, 300, '옛 석유비축기지를 바꾼 공원. 커다란 원통형 탱크, 돌출된 콘크리트 입구, 기둥과 줄무늬 셔터, 넓은 마당과 매봉산 절벽이 보인다.'),
+  ('pinson-hall', '연세대 핀슨관', 'Pinson Hall, Yonsei University', 37.5671131, 126.9390292, 300, '연세대 캠퍼스의 핀슨관(윤동주기념관). 담쟁이가 덮인 오래된 석조 건물과 뾰족한 지붕, 캠퍼스 숲길이 보인다.'),
+  ('sdm-natural-history', '서대문자연사박물관', 'Seodaemun Museum of Natural History', 37.5767601, 126.9378746, 150, '안산 자락의 자연사박물관. 중앙홀에 긴 두개골과 높이 솟은 등뼈의 대형 공룡(아크로칸토사우루스) 골격이 서 있다.'),
+  ('seodaemun-prison', '서대문형무소역사관', 'Seodaemun Prison History Hall', 37.5718896, 126.9589747, 200, '붉은 벽돌의 옛 형무소 건물. 높은 담장과 망루, 붉은 벽돌 옥사가 줄지어 있다.'),
+  ('seoul-battleship', '서울함공원', 'Seoul Battleship Park', 37.5557956, 126.8939668, 250, '한강변에 정박한 회색 퇴역 군함과 잠수정 전시 공원. 회색 선체, 함포, 전시용 잠망경, 한강과 다리가 보인다.'),
+  ('sinchon-station', '구 신촌역사', 'Old Sinchon Station', 37.5598242, 126.942387, 150, '경의선 신촌역의 옛 역사. 작은 단층 목조 역 건물로 박공지붕과 처마가 있고, 옆에 큰 현대식 민자역사 건물과 철길이 있다.'),
+  ('sori-museum', '서울우리소리박물관', 'Seoul Museum of Korean Traditional Music', 37.5771703, 126.9896012, 150, '창덕궁 앞 우리소리박물관. 낮은 현대식 건물과 민요·소리 아카이브 전시, 카세트테이프와 음향 기기 전시가 있다.')
+on conflict (slug) do nothing;
