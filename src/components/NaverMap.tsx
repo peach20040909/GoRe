@@ -58,7 +58,8 @@ export function NaverMap({ places, onSelect, className }: { places: MapPlace[]; 
         if (pts.length > 1) {
           const b = new maps.LatLngBounds(center, center);
           pts.forEach((p) => b.extend(new maps.LatLng(p.lat!, p.lng!)));
-          map.fitBounds(b, { top: 60, right: 40, bottom: 30, left: 40 });
+          // 핀 이름표가 마커 위 가운데에 붙어서, 좌우 여백이 좁으면 양 끝 이름표가 잘림
+          map.fitBounds(b, { top: 70, right: 110, bottom: 30, left: 110 });
         }
         pts.forEach((p) => {
           const m = new maps.Marker({
