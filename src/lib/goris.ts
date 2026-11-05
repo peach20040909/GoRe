@@ -63,7 +63,7 @@ export const GORIS: Gori[] = [
     description: "홍제폭포 앞에서 보낸 시간을 코르크 마개가 달린 유리병에 담아요. 다시 그 자리에 오면 병을 열어 그날의 편지와 사진을 꺼내 볼 수 있어요.",
     howToOpen: "마개를 빼면 편지가 병 입구를 지나 펼쳐져요." },
   { no: 15, id: "memorial-letter", name: "추모 편지", place: "서대문형무소역사관", placeSlug: "seodaemun-prison", cardShape: "paper",
-    description: "역사관의 붉은 벽돌과 전시 기록물에서 색과 형태를 가져온 편지예요. 전시를 보고 오래 기억하고 싶은 이름이나 마음을 한 줄 남겨보세요.",
+    description: "역사관의 붉은 벽돌과 전시 기록물에서 색과 형태를 가져온 편지예요. 전시를 보고 오래 기억하고 싶은 이름과 이야기를 고리에 남겨보세요.",
     howToOpen: "봉투의 접은 부분을 열어 방문자가 쓴 추모 문장을 꺼내요." },
   { no: 16, id: "myongji-horse", name: "백마 자물쇠", place: "명지대학교 인문캠퍼스", placeSlug: "demo-hall", cardShape: "lock",
     description: "명지대를 상징하는 흰 백마를 파란 자물쇠에 새겼어요. 캠퍼스에서 오래 기억하고 싶은 하루를 사진과 한 줄로 남겨보세요.",

@@ -42,7 +42,7 @@ export default function MyPage() {
       <Header title="마이" />
       <div className="px-6 pb-6">
         <div className="character-banner mt-2 h-[148px] bg-accent px-5 py-6 text-white">
-          <p className="relative z-10 text-[21px] font-bold leading-[29px]">쌓인 마음,<br />나만의 여행 기록</p>
+          <p className="relative z-10 text-[21px] font-bold leading-[29px]">쌓인 고리,<br />나만의 여행 기록</p>
           <img src="/theme/pink-friend.png" alt="" className="-right-1.5 top-5 h-32 w-32" />
         </div>
         <div className="mt-6 flex items-center justify-between gap-3">

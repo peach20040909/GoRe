@@ -44,7 +44,7 @@ export default function Home() {
         <div className="home-hero pb-8">
           <Header title="홈" inverse />
           <div className="relative z-10 px-6 pb-2 pt-3">
-            <h1 className="t-title relative z-10 w-[62%]">마음을 남기는<br />가장 가까운 여행</h1>
+            <h1 className="t-title relative z-10 w-[62%]">고리를 남기는<br />가장 가까운 여행</h1>
             <p className="t-caption relative z-10 mt-2 text-white/90">오늘도 우리만의 장소로</p>
             <button className="relative z-10 mt-6 h-10 rounded-xl bg-white px-4 text-base font-medium text-accent" onClick={() => { setExploring(true); setSheet("list"); }}>주변 둘러보기</button>
           </div>
@@ -65,10 +65,11 @@ export default function Home() {
             }}
             compact={!exploring}
             bottomInset={!exploring || open === "peek" ? 0 : (open === "detail" ? 480 : 416) - 90} // 펼친 시트가 지도를 덮는 높이
-            height={exploring ? MAP_H : "246px"}
+            height={exploring ? MAP_H : "max(246px, calc(100dvh - 480px))"}
             square
           />
-        ) :<div className="skeleton !rounded-none" style={{ height: exploring ? MAP_H : "246px" }} />}
+        ) :<div className="skeleton !rounded-none" style={{ height: exploring ? MAP_H : "max(246px, calc(100dvh - 480px))" }} />}
+        {!exploring && <button type="button" aria-label="지도에서 주변 장소 보기" className="absolute inset-0 z-10 cursor-pointer rounded-3xl" onClick={() => { setExploring(true); setSheet("list"); }} />}
         {exploring && <h2 className="t-title pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 via-white/80 to-transparent px-6 pb-10 pt-4">
           오늘의 고리를
           <br />
