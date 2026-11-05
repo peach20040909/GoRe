@@ -16,3 +16,10 @@ const places = [
 const found = placesNearby(places, cityHall);
 assert.deepEqual(found.map((p) => p.slug), ["near"], "반경 안의 장소만, 좌표 없는 장소는 제외");
 console.log("client.check OK");
+
+import { bearingDeg, compassKo } from "./client.ts";
+const east = bearingDeg({ lat: 37.5, lng: 127.0 }, { lat: 37.5, lng: 127.01 });
+assert.ok(Math.abs(east - 90) < 1, `동쪽은 약 90도: ${east}`);
+assert.equal(compassKo(bearingDeg({ lat: 37.5, lng: 127.0 }, { lat: 37.51, lng: 127.0 })), "북");
+assert.equal(compassKo(east), "동");
+console.log("bearing check OK");

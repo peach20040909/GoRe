@@ -8,6 +8,7 @@ type Props = {
   alt: string;
   tint?: string; // 카드 색(#RRGGBB)으로 칠할 때
   tintMaterials?: string[]; // 칠할 재질 이름. 없으면 칠하지 않음
+  arEnabled?: boolean; // false면 AR 버튼 없음 (앵커 반경 밖)
   className?: string;
 };
 
@@ -20,7 +21,7 @@ function hexToRgba(hex: string): [number, number, number, number] {
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255, 1];
 }
 
-export function ModelViewer({ src, alt, tint, tintMaterials = [], className }: Props) {
+export function ModelViewer({ src, alt, tint, tintMaterials = [], arEnabled = true, className }: Props) {
   const ref = useRef<MVElement>(null);
   const [ready, setReady] = useState(false);
 
@@ -48,7 +49,7 @@ export function ModelViewer({ src, alt, tint, tintMaterials = [], className }: P
       ref={ref}
       src={src}
       alt={alt}
-      ar
+      ar={arEnabled}
       ar-modes="webxr scene-viewer quick-look"
       camera-controls
       auto-rotate

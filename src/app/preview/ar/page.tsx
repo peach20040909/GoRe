@@ -1,16 +1,34 @@
 "use client";
-// 3D·AR 확인용: /preview/ar — 휴대폰으로 열면 'AR로 이 자리에 놓아 보기' 버튼이 보임
-import { useState } from "react";
-import { ModelViewer } from "@/components/ModelViewer";
+// 3D·AR 확인용: /preview/ar?place=hongje-falls  (시연: &demo=1 이면 위치 확인 없이 AR)
+import { useEffect, useState } from "react";
+import { AnchoredAR } from "@/components/AnchoredAR";
+import { mediaFor } from "@/lib/media";
 
+type Place = { slug: string; name_ko: string; lat: number | null; lng: number | null; radius_m: number };
 const SKY = ["#87CEEB", "#E07A5F", "#F2A541", "#7FA7D9"];
 
 export default function ArPreview() {
+  const [params, setParams] = useState<{ slug: string; demo: boolean } | null>(null);
+  const [place, setPlace] = useState<Place | null>(null);
   const [tint, setTint] = useState(SKY[0]);
+
+  useEffect(() => {
+    const q = new URLSearchParams(location.search);
+    const slug = q.get("place") || "hongje-falls";
+    setParams({ slug, demo: q.get("demo") === "1" });
+    // 장소 좌표는 /api/places (DB 담당 API). 아직 없으면 '고정 지점 미등록'으로 표시됨
+    fetch("/api/places")
+      .then((r) => (r.ok ? r.json() : { places: [] }))
+      .then((d: { places?: Place[] }) => setPlace(d.places?.find((p) => p.slug === slug) ?? null))
+      .catch(() => setPlace(null));
+  }, []);
+
+  if (!params) return null;
   return (
     <div className="mx-auto max-w-md py-8">
-      <h1 className="text-xl font-bold">홍제폭포 · 유리병 편지</h1>
-      <p className="mt-1 text-sm text-muted">카드 색(그날의 하늘색)으로 편지의 물빛을 바꿔 봅니다.</p>
+      <h1 className="text-xl font-bold">
+        {place?.name_ko ?? params.slug} · {mediaFor(params.slug).label}
+      </h1>
       <div className="mt-4 flex gap-2">
         {SKY.map((c) => (
           <button
@@ -22,13 +40,8 @@ export default function ArPreview() {
           />
         ))}
       </div>
-      <div className="card mt-4 overflow-hidden">
-        <ModelViewer
-          src="/models/hongje-bottle.glb"
-          alt="홍제폭포가 그려진 편지가 담긴 유리병"
-          tint={tint}
-          tintMaterials={["Cascades in mist ink"]}
-        />
+      <div className="mt-4">
+        <AnchoredAR slug={params.slug} anchor={place} tint={tint} demo={params.demo} />
       </div>
     </div>
   );

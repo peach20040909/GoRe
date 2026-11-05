@@ -68,6 +68,16 @@ export function distanceM(a: LatLng, b: LatLng): number {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+/** a에서 b로 가는 방향(0=북, 90=동) */
+export function bearingDeg(a: LatLng, b: LatLng): number {
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const y = Math.sin(rad(b.lng - a.lng)) * Math.cos(rad(b.lat));
+  const x = Math.cos(rad(a.lat)) * Math.sin(rad(b.lat)) - Math.sin(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.cos(rad(b.lng - a.lng));
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}
+
+export const compassKo = (deg: number) => ["북", "북동", "동", "남동", "남", "남서", "서", "북서"][Math.round(deg / 45) % 8];
+
 /** 반경 안의 장소들을 가까운 순으로. 좌표가 아직 없는 장소는 제외 */
 export function placesNearby<T extends PlaceLite>(places: T[], pos: LatLng): (T & { distance: number })[] {
   return places
