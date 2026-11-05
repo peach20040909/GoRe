@@ -71,7 +71,7 @@ export default function MemoryDetail({ params }: { params: Promise<{ id: string 
       <div className="px-6">
         <p className="t-caption mb-3 mt-2 text-muted">{t("이곳에 남긴 기억")}</p>
         <MemoryLetter key={item.id} title={item.title ?? t("기억")} body={opened ? item.content : null}
-          place={t(item.placeName ?? "")} date={new Date(item.createdAt).toLocaleDateString(locale)}
+          place={t(item.placeName ?? "")} placeSlug={item.placeSlug} date={new Date(item.createdAt).toLocaleDateString(locale)}
           coverImage={goriAsset(g?.id ?? "myongji-horse").sealed}
           photoUrl={opened ? item.photoUrl : null} photoCredit={opened ? item.card?.photoCredit : undefined}
           readable={opened} initiallyOpen={showAfterUnlock} onRequestUnlock={() => { if (!busy) inputRef.current?.click(); }} />

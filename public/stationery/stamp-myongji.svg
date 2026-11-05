@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 120" width="240" height="120" fill="none" stroke="#3d6b4f" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 명지대학교 인문캠퍼스: 옥상에 '명지대학교' 간판이 있는 본관 + 언덕길의 은행나무, 한지 편지지용 잉크 선화 -->
+  <!-- 본관: 비스듬히 본 정면(왼쪽)과 옆면(오른쪽) -->
+  <path d="M86 102V30l52-12 34 8v76" stroke-width="1.6"/>
+  <path d="M138 18v84" stroke-width="1.4"/>
+  <!-- 옥상 유리 구조물과 간판 -->
+  <path d="M138 18l2-6 30 5 2 9M96 28l-1-8 26-6" stroke-width="1.1"/>
+  <path d="M95 22l26-6v6l-26 6z" fill="#c4553c" fill-opacity=".14" stroke="#a8432e" stroke-width="1"/>
+  <path d="M99 24.5l1.6-.4M103 23.6l2.4-.6M108 22.4l1.8-.4M112 21.4l2.6-.6M117 20.3l1.8-.4" stroke="#a8432e" stroke-width="1.2"/>
+  <!-- 정면 창문 격자 -->
+  <g stroke-width=".9">
+    <path d="M92 40l40-9M92 48l40-9M92 56l40-9M92 64l40-9M92 72l40-9M92 80l40-9M92 88l40-9"/>
+    <path d="M100 32v68M108 30v70M116 28v72M124 26v74"/>
+  </g>
+  <!-- 옆면: 세로 창 띠 + 음영 빗금 -->
+  <g stroke-width=".9">
+    <path d="M150 24v76M160 26v74"/>
+    <path d="M143 34l26 5M143 46l26 5M143 58l26 5M143 70l26 5M143 82l26 5"/>
+  </g>
+  <path d="M164 28l6 2M164 40l6 2M164 52l6 2M164 64l6 2M164 76l6 2M164 88l6 2" stroke-width=".7" opacity=".6"/>
+  <!-- 오른쪽 옆 건물 -->
+  <path d="M176 102V40l22-6v68M182 46v50M190 44v52M176 56l22-5M176 70l22-5M176 84l22-5" stroke-width="1" opacity=".75"/>
+  <!-- 은행나무 (가을) -->
+  <g stroke-width="1.2">
+    <path d="M58 106V84M80 106V88M150 106V90M168 106V92"/>
+  </g>
+  <g fill="#d9a441" fill-opacity=".35" stroke="#3d6b4f" stroke-width="1.1">
+    <path d="M44 86c-2-12 6-22 14-24 8 2 16 12 14 24-6 4-22 4-28 0z"/>
+    <path d="M70 90c-2-9 4-17 10-18 6 1 12 9 10 18-5 3-15 3-20 0z"/>
+    <path d="M140 92c-2-9 4-16 10-17 6 1 12 8 10 17-5 3-15 3-20 0z"/>
+    <path d="M160 94c-1-7 3-13 8-14 5 1 9 7 8 14-4 2-12 2-16 0z"/>
+  </g>
+  <!-- 언덕길 -->
+  <path d="M30 108c40-4 90-6 180-2" stroke-width="1.2"/>
+  <path d="M96 114c20-3 50-4 80-3" stroke-width=".8" opacity=".5"/>
+</svg>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 120" width="240" height="120" fill="none" stroke="#3d6b4f" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 홍제폭포: 바위 벽 사이로 떨어지는 폭포 + 소나무 + 정자, 한지 편지지용 잉크 선화 -->
+  <!-- 왼쪽 바위 벽 -->
+  <path d="M46 108l6-22 8-10-2-14 12-12 6-16 14-8 16 2v80" stroke-width="1.6"/>
+  <path d="M58 92l14-4M62 80l12-6M70 66l12-4M78 52l10-6M88 40l10-3M66 100l12-3M84 70l8 6M92 58l6 8M80 86l10 4" stroke-width=".9" opacity=".75"/>
+  <!-- 오른쪽 바위 벽 -->
+  <path d="M194 108l-6-20-10-10 2-14-12-10-6-16-12-6-16 2v76" stroke-width="1.6"/>
+  <path d="M182 92l-14-4M178 80l-12-6M170 66l-12-4M162 52l-10-6M152 42l-10-3M176 100l-12-3M156 70l-8 6M150 58l-6 8M160 86l-10 4" stroke-width=".9" opacity=".75"/>
+  <!-- 위쪽 바위 턱 -->
+  <path d="M104 22c6-3 26-3 32 0" stroke-width="1.4"/>
+  <!-- 폭포 물줄기 -->
+  <g stroke="#6f9aa6">
+    <path d="M108 24c1 26-1 52 1 80M114 23c0 28 1 54-1 82M120 23c1 28-1 54 1 82M126 23c-1 28 1 54-1 82M132 24c1 26-1 52 0 80" stroke-width="1.2"/>
+    <path d="M111 30v30M117 36v40M123 30v46M129 38v34" stroke-width=".7" opacity=".7"/>
+  </g>
+  <!-- 바닥 바위와 물보라 -->
+  <g stroke-width="1.4">
+    <path d="M78 108c2-7 10-9 18-6 4-5 10-5 12 0M140 104c4-6 12-6 16-1 6-3 12 0 14 5"/>
+  </g>
+  <g stroke="#6f9aa6" stroke-width="1" opacity=".85">
+    <path d="M100 106c6-3 12 2 20 0s14-3 20 0"/>
+    <path d="M104 111c6-2 10 2 16 0s10-2 16 0"/>
+  </g>
+  <!-- 소나무 (왼쪽 바위 위) -->
+  <g stroke-width="1.3">
+    <path d="M70 34c2-6 1-12 4-18"/>
+    <path d="M58 22c8-4 20-4 30 0M61 29c7-3 16-3 24 0M66 15c5-2 11-2 16 0"/>
+  </g>
+  <!-- 정자 (오른쪽 바위 위) -->
+  <g stroke-width="1.3">
+    <path d="M160 24c7-6 21-6 28 0M157 26l6-2M185 24l6 2"/>
+    <path d="M164 26v13M184 26v13M161 39h26"/>
+  </g>
+  <path d="M168 29h12v8h-12z" fill="#c4553c" fill-opacity=".7" stroke="#a8432e" stroke-width=".9"/>
+</svg>

@@ -275,7 +275,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
       {/* 09 열람 조건 (+ AI가 만든 기억 카드) */}
       {step === "unlock" && draft && (
         <section className="px-6">
-          <MemoryLetter title={draft.title} body={content} place={placeName} date={new Date().toLocaleDateString(locale)} coverImage={asset.sealed} photoUrl={photo ?? photo2} readable className="mx-auto mt-2 w-full max-w-[342px]" />
+          <MemoryLetter title={draft.title} body={content} place={placeName} placeSlug={slug} date={new Date().toLocaleDateString(locale)} coverImage={asset.sealed} photoUrl={photo ?? photo2} readable className="mx-auto mt-2 w-full max-w-[342px]" />
           <p className="t-sub mt-6">{t("내용 공개 범위")}</p>
           <div className="mt-4 flex flex-col gap-4" role="radiogroup">
             <OptionRow title={t("나만 보기")} desc={t("나에게만 편지와 사진이 보여요.")} selected={!isPublic} onSelect={() => setIsPublic(false)} />
@@ -295,7 +295,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
       {/* 완료 */}
       {step === "done" && draft && (
         <section className="px-6 pt-10 text-center">
-          <MemoryLetter title={draft.title} body={content} place={placeName} date={new Date().toLocaleDateString(locale)} coverImage={asset.sealed} photoUrl={photo ?? photo2} readable className="mx-auto mt-2 w-full max-w-[342px]" />
+          <MemoryLetter title={draft.title} body={content} place={placeName} placeSlug={slug} date={new Date().toLocaleDateString(locale)} coverImage={asset.sealed} photoUrl={photo ?? photo2} readable className="mx-auto mt-2 w-full max-w-[342px]" />
           <p className="t-title mt-6">{t("고리를 걸었어요")}</p>
           <p className="t-label mt-2 text-muted">{t(draft.unlockOptions[unlockIdx]?.note ?? "")}</p>
           <div className="mt-8 flex flex-col gap-3">

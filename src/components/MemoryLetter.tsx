@@ -8,6 +8,7 @@ type Props = {
   title: string;
   body: string | null;
   place: string;
+  placeSlug?: string | null; // 편지지 오른쪽 위 장소 그림 선택용
   date: string;
   coverImage: string;
   photoUrl?: string | null;
@@ -19,13 +20,22 @@ type Props = {
 };
 
 /** Figma DS 579:429 / 579:457. A visual cover is separate from server unlock status. */
-export function MemoryLetter({ title, body, place, date, coverImage, photoUrl, photoCredit, readable, initiallyOpen = false, onRequestUnlock, className = "" }: Props) {
+// 편지지 오른쪽 위 장소 그림. 없는 장소(경복궁 포함)는 원본 한지 그림의 광화문을 씀
+const STAMP: Record<string, string> = {
+  "demo-hall": "/stationery/stamp-myongji.svg",
+  "hongje-falls": "/stationery/stamp-hongje.svg",
+  dongnimmun: "/stationery/stamp-dongnimmun.svg",
+};
+
+export function MemoryLetter({ title, body, place, placeSlug, date, coverImage, photoUrl, photoCredit, readable, initiallyOpen = false, onRequestUnlock, className = "" }: Props) {
   const { t } = useLanguage();
   const [revealed, setRevealed] = useState(initiallyOpen);
   const bodyId = useId();
   useEffect(() => { if (initiallyOpen && readable) setRevealed(true); }, [initiallyOpen, readable]);
   const showLetter = readable && revealed;
-  const credited = photoCredit?.sourceUrl.startsWith("https://commons.wikimedia.org/") && photoCredit.licenseUrl.startsWith("https://creativecommons.org/");
+  // 출처 표시: 위키미디어 공용의 CC 라이선스 또는 공공누리(KOGL) 사진
+  const credited = photoCredit?.sourceUrl.startsWith("https://commons.wikimedia.org/") && /^https?:\/\/(creativecommons\.org|www\.kogl\.or\.kr)\//.test(photoCredit.licenseUrl);
+  const stamp = placeSlug ? STAMP[placeSlug] : undefined;
 
   return (
     <div className={className}>
@@ -38,8 +48,15 @@ export function MemoryLetter({ title, body, place, date, coverImage, photoUrl, p
         <header className="flex min-h-10 items-center justify-between gap-3">
           <p className="min-w-0 break-words text-[17px] font-bold leading-[26px]">{t("{place}의 추억", { place })}</p>
           <div className="relative h-10 w-20 shrink-0 overflow-hidden" aria-hidden="true">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/stationery/hanji-reference.png" alt="" className="absolute max-w-none" style={{ width: "416.67%", height: "1250%", left: "-304.17%", top: "-100%" }} />
+            {stamp ? (
+              // 장소별 잉크 선화 (경복궁 외)
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={stamp} alt="" width={80} height={40} className="h-10 w-20" />
+            ) : (
+              // 경복궁(기본): 원본 한지 그림에서 광화문 부분만 잘라 씀
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src="/stationery/hanji-reference.png" alt="" className="absolute max-w-none" style={{ width: "416.67%", height: "1250%", left: "-304.17%", top: "-100%" }} />
+            )}
           </div>
         </header>
         {/* eslint-disable-next-line @next/next/no-img-element */}

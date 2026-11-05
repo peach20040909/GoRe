@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 120" width="240" height="120" fill="none" stroke="#3d6b4f" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 독립문: 돌 아치 + 안쪽 붉은 벽돌, 한지 편지지용 잉크 선화 -->
+  <g stroke-width="1.6">
+    <!-- 난간 -->
+    <path d="M70 22h100M70 27h100"/>
+    <path d="M76 22v-5h88v5"/>
+    <g stroke-width="1.1"><path d="M84 17v5M92 17v5M100 17v5M108 17v5M116 17v5M124 17v5M132 17v5M140 17v5M148 17v5M156 17v5"/></g>
+    <!-- 몸체 -->
+    <path d="M72 27v80h96V27"/>
+    <path d="M64 107h112"/>
+    <!-- 현판 -->
+    <rect x="102" y="31" width="36" height="8" rx="1"/>
+    <!-- 아치 -->
+    <path d="M96 107V70a24 24 0 0 1 48 0v37"/>
+    <path d="M90 107V70a30 30 0 0 1 60 0v37" stroke-width="1.2"/>
+    <!-- 기둥 장식 -->
+    <path d="M86 58v36M154 58v36" stroke-width="1.2"/>
+    <path d="M83 58h6M151 58h6M83 94h6M151 94h6" stroke-width="1.2"/>
+  </g>
+  <!-- 안쪽 붉은 벽돌 -->
+  <path d="M100 70a20 20 0 0 1 40 0v4h-40z" fill="#c4553c" fill-opacity=".75" stroke="#a8432e" stroke-width="1"/>
+  <!-- 돌 쌓은 결 -->
+  <g stroke-width=".8" opacity=".7">
+    <path d="M74 45h14M152 45h14M74 52h12M154 52h12M74 62h10M156 62h10M74 76h10M156 76h10M74 88h10M156 88h10M74 100h12M154 100h12"/>
+    <path d="M80 45v7M160 45v7M79 62v14M161 62v14"/>
+  </g>
+  <!-- 바닥 결 -->
+  <path d="M40 110c30-2 60-1 80-1s50 1 80 1" stroke-width=".9" opacity=".5"/>
+</svg>
