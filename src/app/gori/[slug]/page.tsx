@@ -9,6 +9,7 @@ import Link from "next/link";
 import { ModelViewer } from "@/components/ModelViewer";
 import { MemoryLetter } from "@/components/MemoryLetter";
 import { CameraFeed, type CameraHandle } from "@/components/CameraFeed";
+import { AiWaiting } from "@/components/AiWaiting";
 import { BottomNav, Header, MediaTile, OptionRow, WarnDialog } from "@/components/ds";
 import { api, browserLanguage, distanceM, fmtDistance, ga, getPosition, resizeImage } from "@/lib/client";
 import { goriAsset, goriById } from "@/lib/goris";
@@ -44,6 +45,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
   const [draft, setDraft] = useState<(Draft & { mocked?: boolean }) | null>(null);
   const [unlockIdx, setUnlockIdx] = useState(0);
   const [hang, setHang] = useState<"idle" | "walk" | "hang" | "leave">("idle");
+  const [aiWaiting, setAiWaiting] = useState(false); // AI 기억 카드 생성 대기 화면
 
   useEffect(() => {
     if (!getToken()) return router.replace("/login");
@@ -96,6 +98,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
     if (!content.trim()) return setError(t("편지를 한 줄 이상 적어 주세요"));
     setError(null);
     setBusy(t("편지를 읽고 기억 카드를 만들고 있어요…"));
+    setAiWaiting(true);
     try {
       const d = await api<Draft & { mocked?: boolean }>("/api/memories/draft", {
         placeSlug: slug, content, language: browserLanguage(), photoDataUrl: photo ?? undefined,
@@ -107,6 +110,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
       setError(e instanceof Error ? e.message : t("카드를 만들지 못했어요"));
     } finally {
       setBusy(null);
+      setAiWaiting(false);
     }
   }
 
@@ -231,6 +235,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
   return (
     <div className="min-h-dvh pb-8">
       {step !== "done" && <Header title={{ model: t("모델 미리보기"), write: t("사진과 편지"), unlock: t("열람 조건") }[step as "model"]} back={back && (() => go(back))} />}
+      {aiWaiting && <AiWaiting character={characterLgFor(slug)} place={placeName} />}
 
       {/* 07 모델 미리보기 */}
       {step === "model" && (

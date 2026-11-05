@@ -29,6 +29,12 @@ const rows = `
 다시 찍기|Retake|撮り直す|重新拍摄
 {place}까지 {distance} 남았어요. {place}에 도착하면 고리를 걸 수 있어요.|{distance} to go to {place}. You can hang a Gori once you arrive.|{place}まであと{distance}です。到着したらゴリを掛けられます。|距离{place}还有{distance}。到达后即可挂上Gori。
 위치를 확인하고 있어요…|Checking your location…|位置を確認しています…|正在确认您的位置…
+편지를 읽고 있어요|Reading your letter|手紙を読んでいます|正在阅读你的信
+그날의 감정을 읽고 있어요|Sensing the feelings of the day|その日の気持ちを読み取っています|正在感受那天的心情
+기억 카드를 그리고 있어요|Drawing your memory card|思い出カードを描いています|正在绘制回忆卡片
+열어 볼 조건을 고르고 있어요|Choosing when it can be opened|開ける条件を選んでいます|正在挑选开启条件
+{place}에서 남긴 편지|A letter left at {place}|{place}で残した手紙|在{place}留下的信
+AI가 기억 카드를 만들고 있어요. 잠시만 기다려 주세요.|AI is making your memory card. Just a moment.|AIが思い出カードを作っています。少々お待ちください。|AI正在制作回忆卡片，请稍候。
 인터넷 연결을 확인하고 다시 시도해 주세요|Check your internet connection and try again.|インターネット接続を確認して、もう一度お試しください。|请检查网络连接后重试。
 AR로 거치대 놓아 보기|Place the stand in AR|ARで掛け台を置く|通过AR放置挂架
 고리 거치대|Gori stand|ゴリの掛け台|Gori挂架
