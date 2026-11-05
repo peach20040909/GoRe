@@ -220,43 +220,41 @@ draft → DB 컬럼 매핑 (`supabase/migrations/002_memory_card.sql` 실행 후
 
 ---
 
-## 9. 가입 없는 로그인 — 열쇠 코드 (DB 담당, P0)
+## 9. 회원가입·로그인 (DB 담당, P0)
 
-기획서 조건: **가입 없이.** 대신 첫 기억을 잠글 때 열쇠 코드를 주고, 새 기기에서 코드로 내 기억을 다시 연결한다.
+1년 뒤 다른 기기에서 와서 잠금을 풀어야 하므로 이메일 + 비밀번호로 가입한다.
+**핵심 아이디어:** 가입하면 서버가 `users.device_id`에 추측 불가능한 토큰을 넣고, 로그인하면 그 토큰을 돌려준다.
+브라우저는 토큰을 `localStorage`의 `ms_device_id`에 저장 → **기존 API(deviceId를 받는 것들)는 그대로 동작**한다.
 
 DB (SQL Editor에서 한 번)
 ```sql
-alter table users add column if not exists recovery_code text unique;
+alter table users add column if not exists email text unique;
+alter table users add column if not exists password_hash text;
 ```
 
-### 9-1. 열쇠 코드 발급 — `POST /api/memories` 응답에 추가
-- 사용자에게 `recovery_code`가 없으면 새로 만들어 저장하고 응답에 `recoveryCode`로 내려줌 (있으면 기존 코드)
-- 형식: 대문자 단어 + 숫자 4자리, 헷갈리는 글자(0/O, 1/I) 제외. 예: `BOTTLE-4821`, `LOCK-7393`
-- 생성: `crypto.randomInt` 사용, 중복이면 다시 생성
-```json
-{ "memory": { "...": "..." }, "recoveryCode": "BOTTLE-4821" }
-```
+비밀번호 저장: Node 기본 `crypto.scrypt` (새 라이브러리 X)
+- 저장: `salt(16바이트 hex) + ":" + scrypt(password, salt, 64)의 hex`
+- 비교: `crypto.timingSafeEqual`
+- 비밀번호 원문·해시를 응답이나 로그에 절대 넣지 말 것
 
-### 9-2. `POST /api/users/recover` — 새 기기에서 내 기억 다시 연결
-요청
-```json
-{ "recoveryCode": "bottle-4821" }
-```
-응답
-```json
-{ "deviceId": "원래 사용자의 device_id", "nickname": "민준", "memoryCount": 3 }
-```
-- 대소문자·공백 무시하고 비교 (`toUpperCase().trim()`)
-- 없으면 404 `{ "error": "열쇠 코드를 다시 확인해 주세요" }`
-- 브라우저는 받은 `deviceId`를 `localStorage`의 `ms_device_id`에 저장 → 이후 모든 API가 그 사용자로 동작
-- ponytail: 코드 추측 공격 방지는 MVP에서 생략. 정식 서비스에선 IP별 시도 횟수 제한
+### 9-1. `POST /api/auth/signup`
+요청 `{ "email": "a@b.com", "password": "8자 이상", "nickname": "민준", "language": "ko" }`
+응답 `{ "token": "uuid", "user": { "id": "...", "email": "a@b.com", "nickname": "민준" } }`
+- 이메일 형식이 틀리거나 비밀번호 8자 미만 → 400
+- 이미 가입된 이메일 → 409 `{ "error": "이미 가입된 이메일이에요" }`
+- `token` = 새로 만든 `crypto.randomUUID()`, `users.device_id`에 저장
+- 가입 전에 같은 브라우저로 남긴 기억이 있으면(요청에 `deviceId`가 오면) 그 사용자 행에 email·password_hash를 붙여서 기억을 이어받게 해도 됨 (선택)
 
-### 9-3. `GET /api/users/me?deviceId=` — 내 정보 (화면 상단·설정용)
-```json
-{ "nickname": "민준", "language": "ko", "recoveryCode": "BOTTLE-4821", "memoryCount": 3 }
-```
-- 없는 기기면 404
+### 9-2. `POST /api/auth/login`
+요청 `{ "email": "a@b.com", "password": "..." }`
+응답 `{ "token": "...", "user": { "id": "...", "email": "...", "nickname": "..." } }`
+- 이메일이 없거나 비밀번호가 틀리면 둘 다 401 `{ "error": "이메일 또는 비밀번호를 확인해 주세요" }` (어느 쪽이 틀렸는지 알려주지 않음)
 
-### 9-4. (P1, 시간 남으면) 이메일로 열쇠 코드 받기
-- `POST /api/users/email` `{ deviceId, email }` → 이메일에 열쇠 코드와 복구 링크(`/recover?code=...`) 발송
-- 메일 발송 서비스가 필요해서 MVP에선 화면 목업만
+### 9-3. `GET /api/auth/me?token=`
+응답 `{ "user": { "id": "...", "email": "...", "nickname": "...", "language": "ko" }, "memoryCount": 3 }`
+- 없는 토큰이면 401
+
+### 로그아웃
+서버 API 없음. 브라우저에서 `localStorage.removeItem("ms_device_id")`
+
+ponytail: 토큰이 만료되지 않고 로그인 시도 횟수 제한도 없음 — MVP 한계. 정식 서비스에선 Supabase Auth로 옮기고 시도 제한 추가.
