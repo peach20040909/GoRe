@@ -93,6 +93,15 @@ export default function MemoryDetail({ params }: { params: Promise<{ id: string 
             // eslint-disable-next-line @next/next/no-img-element
             <img src={item.photoUrl} alt="그날의 사진" className="mt-3 w-full rounded-xl object-cover" />
           )}
+          {item.photoUrl && c.photoCredit &&
+            c.photoCredit.sourceUrl.startsWith("https://commons.wikimedia.org/") &&
+            c.photoCredit.licenseUrl.startsWith("https://creativecommons.org/") && (
+            <p className="mt-2 text-xs leading-relaxed text-muted">
+              사진: <a className="underline" href={c.photoCredit.sourceUrl} target="_blank" rel="noreferrer">{c.photoCredit.author} / Wikimedia Commons</a>
+              {" · "}<a className="underline" href={c.photoCredit.licenseUrl} target="_blank" rel="noreferrer">{c.photoCredit.license}</a>
+              {" · 원본"}
+            </p>
+          )}
         </section>
       ) : (
         <section className="mt-6">

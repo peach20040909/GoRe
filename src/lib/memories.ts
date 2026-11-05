@@ -19,7 +19,7 @@ export type MemoryItem = {
   openedAt: string | null;
   content: string | null;
   photoUrl: string | null;
-  card: { color?: string; shape?: string; pattern?: string; glow?: number; engraving?: { mine?: string; ko?: string } } | null;
+  card: { color?: string; shape?: string; pattern?: string; glow?: number; engraving?: { mine?: string; ko?: string }; photoCredit?: { author: string; sourceUrl: string; license: string; licenseUrl: string } } | null;
 };
 
 export async function loadMemories(): Promise<MemoryItem[]> {
