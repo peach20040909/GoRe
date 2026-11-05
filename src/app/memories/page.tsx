@@ -16,6 +16,7 @@ export default function MemoriesPage() {
   const [items, setItems] = useState<MemoryItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<string | null>(null);
+  const [menu, setMenu] = useState<string | null>(null);
 
   useEffect(() => {
     if (!getToken()) return router.replace("/login");
@@ -50,16 +51,32 @@ export default function MemoriesPage() {
           const g = goriById(it.medium);
           const img = it.status === "opened" && it.photoUrl ? it.photoUrl : g ? (it.status === "opened" ? goriAsset(g.id).opened : goriAsset(g.id).sealed) : null;
           return (
-            <Link key={it.id} href={`/memories/${it.id}`} className="overflow-hidden rounded-2xl border border-line bg-surface">
-              <div className="flex h-[76px] items-center gap-3 p-4">
-                <Character slug={it.placeSlug} size={40} />
-                <div className="min-w-0">
-                  <p className="t-strong truncate">{it.title ?? g?.name ?? "기억"}</p>
-                  <p className="t-caption text-muted">{it.placeName} · {fmt(it.createdAt)}{it.status === "locked" && " · 🔒 잠김"}</p>
-                </div>
+            <div key={it.id} className="relative rounded-2xl border border-line bg-surface">
+              <div className="flex h-[76px] items-center gap-3 py-4 pl-4 pr-1">
+                <Link href={`/memories/${it.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                  <Character slug={it.placeSlug} size={40} />
+                  <div className="min-w-0">
+                    <p className="t-strong truncate">{it.title ?? g?.name ?? "기억"}</p>
+                    <p className="t-caption text-muted">{it.placeName} · {fmt(it.createdAt)}{it.status === "locked" && " · 🔒 잠김"}</p>
+                  </div>
+                </Link>
+                {/* DS / More icon button → DS / Memory overflow menu (내 고리에만) */}
+                <button aria-label="더보기" aria-expanded={menu === it.id} onClick={() => setMenu(menu === it.id ? null : it.id)} className="flex size-11 shrink-0 items-center justify-center">
+                  <img src="/ds/icon-more.svg" alt="" width={20} height={20} />
+                </button>
               </div>
-              {img && <img src={img} alt="" className="h-40 w-full bg-canvas object-cover" />}
-            </Link>
+              {menu === it.id && (
+                <Link href={`/memories/${it.id}/delete`} className="t-label absolute right-0 top-11 z-10 flex h-14 w-[164px] items-center gap-3 rounded-xl border border-line bg-surface p-4 shadow-[0_4px_16px_rgba(0,0,0,0.08)]">
+                  <img src="/ds/icon-trash.svg" alt="" width={20} height={20} />
+                  고리 삭제
+                </Link>
+              )}
+              {img && (
+                <Link href={`/memories/${it.id}`} className="block overflow-hidden rounded-b-2xl">
+                  <img src={img} alt="" className="h-40 w-full bg-canvas object-cover" />
+                </Link>
+              )}
+            </div>
           );
         })}
       </div>

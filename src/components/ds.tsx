@@ -24,11 +24,11 @@ const TABS = [
   { key: "memories", label: "추억", href: "/memories", on: "/ds/icon-book-on.svg", off: "/ds/icon-book.svg" },
   { key: "gori", label: "고리", href: "/gori", on: "/ds/icon-lock-on.svg", off: "/ds/icon-lock.svg" },
   { key: "collection", label: "수집", href: "/collection", on: "/ds/icon-award-on.svg", off: "/ds/icon-award.svg" },
-  { key: "my", label: "마이", href: null, on: "/ds/icon-user.svg", off: "/ds/icon-user.svg" },
+  { key: "my", label: "마이", href: "/my", on: "/ds/icon-user-on.svg", off: "/ds/icon-user.svg" },
 ] as const;
 
-/** 하단 탭. 마이는 MVP 범위 밖이라 자리만 둔다 */
-export function BottomNav({ active }: { active: "home" | "memories" | "gori" | "collection" }) {
+/** 하단 탭 (DS / Bottom navigation) */
+export function BottomNav({ active }: { active: "home" | "memories" | "gori" | "collection" | "my" }) {
   return (
     <>
       <div className="h-[76px]" aria-hidden />
