@@ -10,6 +10,7 @@ type Props = {
   tintMaterials?: string[]; // 칠할 재질 이름. 없으면 칠하지 않음
   arEnabled?: boolean; // false면 AR 버튼 없음 (앵커 반경 밖)
   className?: string;
+  style?: React.CSSProperties; // 크기·배경 덮어쓰기 (예: 투명 배경)
 };
 
 // model-viewer 요소에서 쓰는 부분만 타입으로
@@ -21,7 +22,7 @@ function hexToRgba(hex: string): [number, number, number, number] {
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255, 1];
 }
 
-export function ModelViewer({ src, alt, tint, tintMaterials = [], arEnabled = true, className }: Props) {
+export function ModelViewer({ src, alt, tint, tintMaterials = [], arEnabled = true, className, style }: Props) {
   const ref = useRef<MVElement>(null);
   const [ready, setReady] = useState(false);
 
@@ -59,7 +60,7 @@ export function ModelViewer({ src, alt, tint, tintMaterials = [], arEnabled = tr
       exposure="1.1"
       class={className}
       // 유리는 흰 배경에서 안 보여서 옅은 물빛 배경을 깔아 둠
-      style={{ display: "block", width: "100%", height: "min(100vw, 420px)", background: "linear-gradient(#e9f1ef, #d5e3df)" }}
+      style={{ display: "block", width: "100%", height: "min(100vw, 420px)", background: "linear-gradient(#e9f1ef, #d5e3df)", ...style }}
     >
       <button slot="ar-button" className="btn" style={{ position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)" }}>
         AR로 이 자리에 놓아 보기

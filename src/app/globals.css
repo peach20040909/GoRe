@@ -1,46 +1,74 @@
 @import "tailwindcss";
 
-/* ★ 디자이너가 색만 바꾸면 전체 톤이 바뀌는 토큰 ★ */
+/* 디자인 토큰 — Figma "DS / Foundations · MVP v1.0" (중립 UI, 장소 테마는 캐릭터로) */
 :root {
-  --bg: #f7f7f5;
-  --surface: #ffffff;
-  --text: #17181a;
-  --muted: #6b6f76;
-  --line: #e6e6e3;
-  --brand: #2f5bff;
+  --surface-base: #ffffff;
+  --surface-canvas: #f5f5f5;
+  --surface-subtle: #ececec;
+  --surface-letter-paper: #fcfaf4;
+  --border-default: #dedede;
+  --border-strong: #c7c7c7;
+  --text-primary: #171717;
+  --text-secondary: #4d4d4d;
+  --text-tertiary: #686868;
+  --action-primary: #171717;
+  --accent: #4562e8;
+  --error: #b93838;
+  --portrait-bg: #f5f0e9;
+
+  /* 예전 이름 (기존 화면 호환) */
+  --bg: var(--surface-base);
+  --surface: var(--surface-base);
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --line: var(--border-default);
+  --brand: var(--text-primary);
   --brand-ink: #ffffff;
-  --brand-soft: #eef2ff;
+  --brand-soft: var(--surface-canvas);
   --radius: 16px;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-canvas: var(--surface-canvas);
+  --color-subtle: var(--surface-subtle);
   --color-text: var(--text);
   --color-muted: var(--muted);
+  --color-faint: var(--text-tertiary);
   --color-line: var(--line);
   --color-brand: var(--brand);
   --color-brand-ink: var(--brand-ink);
   --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif;
 }
 
 html, body { background: var(--bg); color: var(--text); }
 body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
 
+/* 타이포 (title 24/34, heading 20/28, subheading 18/26, body 16/24, label 14/20, caption 12/18) */
+.t-title { font-size: 24px; line-height: 34px; font-weight: 700; }
+.t-heading { font-size: 20px; line-height: 28px; font-weight: 700; }
+.t-sub { font-size: 18px; line-height: 26px; font-weight: 700; }
+.t-body { font-size: 16px; line-height: 24px; }
+.t-strong { font-size: 16px; line-height: 24px; font-weight: 500; }
+.t-label { font-size: 14px; line-height: 20px; font-weight: 500; }
+.t-caption { font-size: 12px; line-height: 18px; }
+
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+/* DS / Button — Primary 52px, R12 */
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-  height: 48px; padding: 0 20px; border-radius: 12px; font-weight: 600;
-  background: var(--brand); color: var(--brand-ink); transition: opacity .15s, transform .05s;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 52px; padding: 0 16px; border-radius: 12px; font-size: 16px; line-height: 24px; font-weight: 500;
+  background: var(--action-primary); color: #fff; transition: opacity .15s, transform .05s;
 }
-.btn:hover { opacity: .92; }
-.btn:active { transform: scale(.98); }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
-.btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+.btn:active { transform: scale(.98); opacity: .85; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-ghost { background: var(--surface-base); color: var(--text-primary); border: 1px solid var(--border-default); }
 
 @keyframes shimmer { 100% { transform: translateX(100%); } }
-.skeleton { position: relative; overflow: hidden; background: #ececea; border-radius: 10px; }
+.skeleton { position: relative; overflow: hidden; background: var(--surface-subtle); border-radius: 12px; }
 .skeleton::after {
   content: ""; position: absolute; inset: 0; transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
