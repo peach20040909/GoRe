@@ -8,8 +8,8 @@
 2026학년도 명지대학교 AI 창의적 아이디어 해커톤 · 6조
 주제: **AI × K-콘텐츠, Local to Global** — 관광자원에 기록 문화를 연결하는 서비스
 
-- 배포: https://gori.vercel.app
-- 저장소: https://github.com/peach20040909/gori
+- 배포: https://go-re.vercel.app
+- 저장소: https://github.com/peach20040909/GoRe
 - API 명세: [`docs/API.md`](docs/API.md) · DB 구조: [`supabase/schema.sql`](supabase/schema.sql)
 
 ---
