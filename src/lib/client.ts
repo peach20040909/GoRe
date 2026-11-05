@@ -100,3 +100,13 @@ export async function api<T>(url: string, body?: unknown): Promise<T> {
   if (!res.ok) throw new Error((data as { error?: string }).error || "잠시 후 다시 시도해 주세요");
   return data as T;
 }
+
+/** 받침 있으면 "이", 없으면 "가" (경복궁이 / 홍제폭포가). 한글이 아니면 "가" */
+export function ga(word: string): "이" | "가" {
+  const w = word.trim();
+  const c = w.charCodeAt(w.length - 1);
+  return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0 ? "이" : "가";
+}
+
+/** 거리 표시: 1km 미만은 m, 이상은 소수 한 자리 km */
+export const fmtDistance = (m: number) => (m < 1000 ? `${Math.round(m)}m` : `${(m / 1000).toFixed(1)}km`);

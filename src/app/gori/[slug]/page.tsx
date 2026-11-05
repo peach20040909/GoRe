@@ -9,8 +9,8 @@ import Link from "next/link";
 import { ModelViewer } from "@/components/ModelViewer";
 import { MemoryLetter } from "@/components/MemoryLetter";
 import { CameraFeed, type CameraHandle } from "@/components/CameraFeed";
-import { BottomNav, Header, MediaTile, OptionRow } from "@/components/ds";
-import { api, browserLanguage, distanceM, getPosition, resizeImage } from "@/lib/client";
+import { BottomNav, Header, MediaTile, OptionRow, WarnDialog } from "@/components/ds";
+import { api, browserLanguage, distanceM, fmtDistance, ga, getPosition, resizeImage } from "@/lib/client";
 import { goriAsset, goriById } from "@/lib/goris";
 import { characterLgFor, mediaFor, standFor } from "@/lib/media";
 import { getToken, isDemo } from "@/lib/session";
@@ -20,12 +20,6 @@ type Place = { slug: string; name_ko: string; lat: number | null; lng: number | 
 type Step = "auth" | "model" | "write" | "unlock" | "ar" | "done";
 const BACK: Partial<Record<Step, Step>> = { model: "auth", write: "model", unlock: "write", ar: "unlock" };
 const UNLOCK_TITLE: Record<string, string> = { revisit: "이 장소에서 열기", together: "같이 열기", date: "정한 날에 열기", season: "그 계절이 오면 열기" };
-
-// 받침 있으면 "이", 없으면 "가" (경복궁이 / 홍제폭포가). 한글이 아니면 "가"
-const ga = (word: string) => {
-  const c = word.trim().charCodeAt(word.trim().length - 1);
-  return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0 ? "이" : "가";
-};
 
 /* eslint-disable @next/next/no-img-element */
 export default function GoriFlow({ params }: { params: Promise<{ slug: string }> }) {
@@ -83,7 +77,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
         if (!pos) return setWarn({ title: t("위치를 확인할 수 없어요"), desc: t("위치 권한을 허용한 뒤 다시 시도해 주세요.") });
         const d = Math.round(distanceM(pos, { lat: place.lat, lng: place.lng }));
         if (d > place.radius_m)
-          return setWarn({ title: notHere, desc: t("{place}에서 {distance}m 떨어져 있어요. {radius}m 안으로 와서 다시 찍어 주세요.", { place: name, distance: d, radius: place.radius_m }) });
+          return setWarn({ title: notHere, desc: t("{place}에서 {distance} 떨어져 있어요. {radius}m 안으로 와서 다시 찍어 주세요.", { place: name, distance: fmtDistance(d), radius: place.radius_m }) });
       }
       // 사진 인식: 다른 등록 장소로 또렷하게 보이면 막고 경고. 알아보기 어려운 사진(실내 등)은 GPS를 믿고 통과
       const seen = await api<{ slug: string | null; confidence: number }>("/api/places/identify", { imageDataUrl: img }).catch(() => null);
@@ -170,16 +164,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
         </div>
         <BottomNav active="gori" />
         {/* 장소 확인 실패 경고: "여기는 ○○가 아니에요!" */}
-        {warn && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6" role="alertdialog" aria-modal="true" aria-labelledby="warn-title">
-            <div className="w-full max-w-[342px] rounded-3xl bg-surface p-6 text-center shadow-xl">
-              <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#fbeaea] text-3xl" aria-hidden>⚠️</div>
-              <p id="warn-title" className="t-heading mt-4 text-[var(--error)]">{warn.title}</p>
-              <p className="t-label mt-3 text-muted">{warn.desc}</p>
-              <button className="btn mt-6 w-full" onClick={() => setWarn(null)}>{t("다시 찍기")}</button>
-            </div>
-          </div>
-        )}
+        {warn && <WarnDialog title={warn.title} desc={warn.desc} action={t("다시 찍기")} onClose={() => setWarn(null)} />}
       </div>
     );
 

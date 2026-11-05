@@ -102,3 +102,17 @@ export function MediaTile({ src, label, onFile, capture }: { src?: string | null
     </label>
   );
 }
+
+/** 경고 팝업 (장소 확인 실패 등): 빨간 제목 + 설명 + 확인 버튼 */
+export function WarnDialog({ title, desc, action, onClose }: { title: string; desc: string; action: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6" role="alertdialog" aria-modal="true" aria-labelledby="warn-title" onClick={onClose}>
+      <div className="w-full max-w-[342px] rounded-3xl bg-surface p-6 text-center shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#fbeaea] text-3xl" aria-hidden>⚠️</div>
+        <p id="warn-title" className="t-heading mt-4 text-[var(--error)]">{title}</p>
+        <p className="t-label mt-3 text-muted">{desc}</p>
+        <button className="btn mt-6 w-full" onClick={onClose} autoFocus>{action}</button>
+      </div>
+    </div>
+  );
+}

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { characterFor } from "@/lib/media";
 import { useLanguage } from "@/components/LanguageProvider";
 
-export type MapPlace = { slug: string; name_ko: string; lat: number | null; lng: number | null; memoryCount?: number };
+export type MapPlace = { slug: string; name_ko: string; lat: number | null; lng: number | null; radius_m?: number; memoryCount?: number };
 
 // 네이버 지도 SDK에서 쓰는 부분만 타입으로
 type LatLng = unknown;

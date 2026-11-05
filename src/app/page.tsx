@@ -5,11 +5,13 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { NaverMap, type MapPlace } from "@/components/NaverMap";
-import { BottomNav, Character, Header } from "@/components/ds";
+import { BottomNav, Character, Header, WarnDialog } from "@/components/ds";
+import { useRouter } from "next/navigation";
+import { distanceM, fmtDistance, ga, getPosition } from "@/lib/client";
 import { goriAsset } from "@/lib/goris";
 import { mediaFor } from "@/lib/media";
 import { loadMemories } from "@/lib/memories";
-import { getToken } from "@/lib/session";
+import { getToken, isDemo } from "@/lib/session";
 import { BADGES, earnedBadges } from "@/lib/badges";
 
 // 홈 지도에 보일 장소만 (다른 장소는 DB에 있고 고리·해금은 그대로 동작)
@@ -34,6 +36,27 @@ export default function Home() {
   const moved = useRef(false);
   const [summary, setSummary] = useState<{ memories: number; badges: number } | null>(null);
   const [summaryError, setSummaryError] = useState(false);
+  const router = useRouter();
+  const [checking, setChecking] = useState(false);
+  const [warn, setWarn] = useState<{ title: string; desc: string } | null>(null);
+
+  // "여기에 고리 걸기": 그 장소 반경 안에 있을 때만 카메라(고리) 화면으로. 아니면 경고 팝업 (시연 모드는 통과)
+  async function goHang(p: MapPlace) {
+    if (isDemo()) return router.push(`/gori/${p.slug}`);
+    setChecking(true);
+    const pos = await getPosition();
+    setChecking(false);
+    const name = t(p.name_ko);
+    if (!pos) return setWarn({ title: t("위치를 확인할 수 없어요"), desc: t("위치 권한을 허용한 뒤 다시 시도해 주세요.") });
+    if (p.lat == null || p.lng == null) return router.push(`/gori/${p.slug}`);
+    const d = distanceM(pos, { lat: p.lat, lng: p.lng });
+    if (d > (p.radius_m ?? 150))
+      return setWarn({
+        title: t("여기는 {place}{ga} 아니에요!", { place: name, ga: ga(name) }),
+        desc: t("{place}까지 {distance} 남았어요. {place}에 도착하면 고리를 걸 수 있어요.", { place: name, distance: fmtDistance(d) }),
+      });
+    router.push(`/gori/${p.slug}`);
+  }
 
   useEffect(() => {
     if (!getToken()) { setSummary({ memories: 0, badges: 0 }); return; }
@@ -192,11 +215,14 @@ export default function Home() {
               <img src={g.sealed} alt={t("봉인된 고리")} className="h-[152px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
               <img src={g.opened} alt={t("열린 고리")} className="h-[152px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
             </div>
-            <Link href={`/gori/${selected.slug}`} className="btn mt-6 w-full">{t("여기에 고리 걸기")}</Link>
+            <button className="btn mt-6 w-full" disabled={checking} onClick={() => goHang(selected)}>
+              {checking ? t("위치를 확인하고 있어요…") : t("여기에 고리 걸기")}
+            </button>
           </div>
         )}
       </section>}
       <BottomNav active="home" />
+      {warn && <WarnDialog title={warn.title} desc={warn.desc} action={t("확인")} onClose={() => setWarn(null)} />}
     </div>
   );
 }
