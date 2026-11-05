@@ -61,6 +61,10 @@ export type PublicMemoryRow = {
   created_at: string;
 };
 
+/** 팀원 코드(places/identify 등)가 쓰는 이름. 같은 행 타입의 별칭 */
+export type User = UserRow;
+export type Place = PlaceRow;
+
 /* ───────────────────────── 내부: 환경변수 · 에러 ───────────────────────── */
 
 const PHOTO_BUCKET = "photos";
@@ -138,11 +142,14 @@ export type DbOptions = {
  * @param path 예: "/places?select=slug,name_ko&order=created_at.asc"  (앞의 /rest/v1 은 생략)
  * @returns 파싱된 JSON. 응답 본문이 비어 있으면(return=minimal 등) null
  *
- * 쓰기 시 행을 돌려받으려면 prefer: "return=representation" 을 줄 것.
+ * prefer 를 생략하면 쓰기(POST/PATCH/PUT/DELETE)는 "return=representation" 으로 보내 변경된 행을 돌려준다.
+ * (팀원 코드 memories/[id]/revisit 가 `const [row] = await db(PATCH …)` 로 행을 받기 때문)
+ * 행이 필요 없으면 prefer: "return=minimal" 을 줄 것.
  * 필터 값은 호출하는 쪽에서 encodeURIComponent 로 감쌀 것.
  */
 export async function db<T = unknown>(path: string, opts: DbOptions = {}): Promise<T> {
-  const { method = "GET", body, prefer } = opts;
+  const { method = "GET", body } = opts;
+  const prefer = opts.prefer ?? (method === "GET" ? undefined : "return=representation");
   const url = `${baseUrl()}/rest/v1/${path.replace(/^\/+/, "")}`;
   const headers = authHeaders({
     ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
@@ -216,15 +223,19 @@ export async function uploadPhoto(dataUrl: string): Promise<string> {
 
 /**
  * device_id 로 유저 upsert 후 행을 돌려준다.
- * nickname 이 비어 있으면 기존 닉네임을 덮어쓰지 않는다.
+ * nickname 이 비어 있으면 기존 닉네임을, language 를 생략하면 기존 언어를 덮어쓰지 않는다.
  */
-export async function upsertUser(deviceId: string, nickname: string | null | undefined, language: string): Promise<UserRow> {
+export async function upsertUser(deviceId: string, nickname?: string | null, language?: string): Promise<UserRow> {
   assertDeviceId(deviceId);
   const nick = typeof nickname === "string" ? nickname.trim().slice(0, 40) : "";
   const rows = await db<UserRow[]>("/users?on_conflict=device_id", {
     method: "POST",
     prefer: "resolution=merge-duplicates,return=representation",
-    body: { device_id: deviceId, language: normalizeLanguage(language), ...(nick ? { nickname: nick } : {}) },
+    body: {
+      device_id: deviceId,
+      ...(language !== undefined ? { language: normalizeLanguage(language) } : {}),
+      ...(nick ? { nickname: nick } : {}),
+    },
   });
   const user = rows?.[0];
   if (!user) throw new DbError("users upsert 결과가 비어 있음");
@@ -245,4 +256,12 @@ export async function getPlaceBySlug(slug: string): Promise<PlaceRow | null> {
   assertSlug(slug);
   const rows = await db<PlaceRow[]>(`/places?slug=eq.${encodeURIComponent(slug)}&select=*&limit=1`);
   return rows?.[0] ?? null;
+}
+
+/**
+ * 팀원 코드(memories/draft)가 쓰는 이름. getPlaceBySlug 와 같지만
+ * 형식이 이상한 slug 는 400 대신 null 을 돌려준다 (호출부가 "없는 장소" 404 로 처리).
+ */
+export async function getPlace(slug: string): Promise<PlaceRow | null> {
+  return SLUG_RE.test(slug) ? getPlaceBySlug(slug) : null;
 }

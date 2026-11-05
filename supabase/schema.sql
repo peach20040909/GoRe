@@ -42,7 +42,11 @@ create table memories (
   ai_keywords text[] not null default '{}',
   ai_emotion text,
   visibility text not null default 'private' check (visibility in ('private', 'public_anonymous')),
-  unlock_type text not null default 'revisit' check (unlock_type in ('date', 'revisit', 'together')),
+  record_type text,                                -- wish | retro | letter
+  fortune text,                                    -- 운 카테고리 (주)
+  target text,                                     -- self | partner | family | friend | faraway
+  ai_card jsonb not null default '{}',             -- 카드 디자인 값·각인 문구
+  unlock_type text not null default 'revisit' check (unlock_type in ('date', 'season', 'revisit', 'together')),
   unlock_at timestamptz,
   unlock_note text,                                -- AI가 제안한 조건 설명
   status text not null default 'locked' check (status in ('locked', 'opened')),
