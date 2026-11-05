@@ -51,7 +51,7 @@ DB 구조는 [`supabase/schema.sql`](../supabase/schema.sql) 참고.
 ```
 - `lat`/`lng`가 아직 비어 있는 장소는 `null`로 내려줌 (GPS 자동 입장에서 제외)
 
-## 2. `POST /api/places/identify` — 사진으로 장소 판정 (AI)
+## 2. `POST /api/places/identify` — 사진으로 장소 판정 (AI) ✅ 구현 완료
 
 GPS가 애매하거나 실내일 때, 주변 사진으로 어느 장소인지 판정.
 
@@ -71,26 +71,36 @@ GPS가 애매하거나 실내일 때, 주변 사진으로 어느 장소인지 �
 
 사용자가 쓴 기억을 정리하고, 언제·어떻게 다시 열지 2~3개 제안.
 
-요청
+✅ 구현 완료 (`src/app/api/memories/draft`). 기획서 6-2의 B(안전 필터)·C(기억 이해)·D(카드 디자인 값)·E(열림 조건)를 한 번에 처리.
+
+요청 (`photoDataUrl`은 선택 — 있으면 하늘색·계절을 카드에 반영)
 ```json
-{ "placeSlug": "hongje-falls", "content": "졸업 전에 친구들이랑 여기서 사진 찍었다. 취업하면 다시 오자고 약속함", "language": "ko" }
+{ "placeSlug": "hongje-falls", "language": "en", "photoDataUrl": "data:image/jpeg;base64,...",
+  "content": "I came here with my girlfriend Mina. I hope we pass our exams next month and come back together." }
 ```
-응답
+응답 (실제 응답 예)
 ```json
 {
-  "title": "졸업 전, 폭포 앞의 약속",
-  "keywords": ["졸업", "친구", "약속"],
-  "emotion": "설렘",
+  "safe": true, "unsafeReason": null,
+  "recordType": "retro", "fortune": { "main": null, "sub": null },
+  "target": "partner", "emotion": "hopeful", "timeHint": "next month's exam",
+  "title": "Memories at Hongje", "keywords": ["waterfall", "first trip", "love"],
+  "card": { "color": "#87CEEB", "shape": "pair", "pattern": "waterfall", "glow": 0.7 },
+  "engraving": { "mine": "Together in every season.", "ko": "모든 계절에 함께하길." },
   "unlockOptions": [
-    { "type": "revisit", "unlockAt": null, "note": "취업 후 이 자리에 다시 오면 열려요" },
-    { "type": "date", "unlockAt": "2027-11-06T00:00:00+09:00", "note": "1년 뒤 오늘, 이 자리에서 열려요" },
-    { "type": "together", "unlockAt": null, "note": "그날의 친구와 함께 와야 열려요" }
+    { "type": "date", "unlockAt": "2026-12-06T00:00:00+09:00", "note": "Revisit this memory on exam day." },
+    { "type": "together", "unlockAt": null, "note": "Return here with Mina." }
   ],
   "mocked": false
 }
 ```
-- `type`: `date`(날짜 이후 + 그 자리) / `revisit`(다시 오면) / `together`(함께 와야 — MVP에선 revisit처럼 처리)
-- 결과는 사용자 언어(`language`)로
+- 해롭거나 저주성 내용이면 **422** `{ error, reason }` → 화면에서 다시 쓰게 안내
+- `recordType`: `wish`(소원) / `retro`(회고) / `letter`(편지)
+- `fortune.main/sub`: `love` `wealth` `success` `health` `family` `bonds` `reunion` `fresh` `own` 또는 `null`
+- `target`: `self` / `partner` / `family` / `friend` / `faraway`
+- `card`: 카드 그림(SVG)에 쓰는 값. `shape`가 `pair`면 쌍자물쇠
+- `unlockOptions[].type`: `date`(그날 이후) / `season`(다음 계절, `unlockAt` 있음) / `revisit`(다시 오면) / `together`(함께 와야 — MVP에선 revisit처럼 처리)
+- 사람이 읽는 문장은 사용자 언어(`language`)로, `engraving.ko`만 항상 한국어
 
 ## 4. `POST /api/memories` — 기억 저장
 
@@ -101,11 +111,24 @@ GPS가 애매하거나 실내일 때, 주변 사진으로 어느 장소인지 �
   "placeSlug": "hongje-falls", "medium": "lock",
   "content": "원문", "photoDataUrl": "data:image/jpeg;base64,...",
   "visibility": "public_anonymous",
-  "title": "...", "keywords": ["..."], "emotion": "...",
+  "draft": { "...": "3번 draft 응답을 그대로" },
   "unlockType": "date", "unlockAt": "2027-11-06T00:00:00+09:00", "unlockNote": "...",
   "parentMemoryId": null
 }
 ```
+draft → DB 컬럼 매핑 (`supabase/migrations/002_memory_card.sql` 실행 후)
+
+| draft | memories 컬럼 |
+|---|---|
+| `title` | `ai_title` |
+| `keywords` | `ai_keywords` |
+| `emotion` | `ai_emotion` |
+| `recordType` | `record_type` |
+| `fortune.main` | `fortune` |
+| `target` | `target` |
+| `{ ...card, engraving, fortuneSub: fortune.sub, timeHint }` | `ai_card` (jsonb) |
+
+- 익명화: `import { anonymizeMemory } from "@/lib/memory-ai"` → `const { anonText, translations } = await anonymizeMemory(content)` ✅ 구현 완료
 응답
 ```json
 { "memory": { "id": "uuid", "status": "locked", "...": "memories 테이블 행" } }
@@ -136,7 +159,7 @@ GPS가 애매하거나 실내일 때, 주변 사진으로 어느 장소인지 �
 - 열린 기억만 원문과 사진을 내려줌
 - 최신순
 
-## 6. `POST /api/memories/[id]/revisit` — 다시 방문, 같은 자리 판정 (AI)
+## 6. `POST /api/memories/[id]/revisit` — 다시 방문, 같은 자리 판정 (AI) ✅ 구현 완료
 
 요청
 ```json
