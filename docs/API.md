@@ -217,3 +217,46 @@ draft → DB 컬럼 매핑 (`supabase/migrations/002_memory_card.sql` 실행 후
 | 관리자 (좌표 저장) | 8 |
 
 프런트 담당은 위 응답 예시를 그대로 가짜 데이터로 써서 API 완성 전에 화면부터 만들 수 있음.
+
+---
+
+## 9. 가입 없는 로그인 — 열쇠 코드 (DB 담당, P0)
+
+기획서 조건: **가입 없이.** 대신 첫 기억을 잠글 때 열쇠 코드를 주고, 새 기기에서 코드로 내 기억을 다시 연결한다.
+
+DB (SQL Editor에서 한 번)
+```sql
+alter table users add column if not exists recovery_code text unique;
+```
+
+### 9-1. 열쇠 코드 발급 — `POST /api/memories` 응답에 추가
+- 사용자에게 `recovery_code`가 없으면 새로 만들어 저장하고 응답에 `recoveryCode`로 내려줌 (있으면 기존 코드)
+- 형식: 대문자 단어 + 숫자 4자리, 헷갈리는 글자(0/O, 1/I) 제외. 예: `BOTTLE-4821`, `LOCK-7393`
+- 생성: `crypto.randomInt` 사용, 중복이면 다시 생성
+```json
+{ "memory": { "...": "..." }, "recoveryCode": "BOTTLE-4821" }
+```
+
+### 9-2. `POST /api/users/recover` — 새 기기에서 내 기억 다시 연결
+요청
+```json
+{ "recoveryCode": "bottle-4821" }
+```
+응답
+```json
+{ "deviceId": "원래 사용자의 device_id", "nickname": "민준", "memoryCount": 3 }
+```
+- 대소문자·공백 무시하고 비교 (`toUpperCase().trim()`)
+- 없으면 404 `{ "error": "열쇠 코드를 다시 확인해 주세요" }`
+- 브라우저는 받은 `deviceId`를 `localStorage`의 `ms_device_id`에 저장 → 이후 모든 API가 그 사용자로 동작
+- ponytail: 코드 추측 공격 방지는 MVP에서 생략. 정식 서비스에선 IP별 시도 횟수 제한
+
+### 9-3. `GET /api/users/me?deviceId=` — 내 정보 (화면 상단·설정용)
+```json
+{ "nickname": "민준", "language": "ko", "recoveryCode": "BOTTLE-4821", "memoryCount": 3 }
+```
+- 없는 기기면 404
+
+### 9-4. (P1, 시간 남으면) 이메일로 열쇠 코드 받기
+- `POST /api/users/email` `{ deviceId, email }` → 이메일에 열쇠 코드와 복구 링크(`/recover?code=...`) 발송
+- 메일 발송 서비스가 필요해서 MVP에선 화면 목업만
