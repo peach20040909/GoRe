@@ -29,6 +29,9 @@ export default function Home() {
   const [selected, setSelected] = useState<MapPlace | null>(null);
   const [exploring, setExploring] = useState(false);
   const touchY = useRef(0);
+  const [drag, setDrag] = useState(0); // 시트를 끄는 중인 거리(px)
+  const dragging = useRef(false);
+  const moved = useRef(false);
   const [summary, setSummary] = useState<{ memories: number; badges: number } | null>(null);
   const [summaryError, setSummaryError] = useState(false);
 
@@ -91,6 +94,7 @@ export default function Home() {
               setSheet("peek");
             }}
             compact={!exploring}
+            showMe
             bottomInset={!exploring || open === "peek" ? 0 : (open === "detail" ? 480 : 416) - 90} // 펼친 시트가 지도를 덮는 높이
             height={exploring ? MAP_H : "max(220px, calc(100dvh - 560px))"}
             square
@@ -104,21 +108,52 @@ export default function Home() {
       {/* 바텀 시트 (DS / Nearby places sheet · DS / Place detail sheet). 손잡이를 누르거나 위로 밀면 올라옴 */}
       {exploring && <section
         className={`fixed inset-x-0 bottom-[76px] z-20 mx-auto max-w-[430px] rounded-t-3xl bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-transform duration-300 ${open === "detail" ? "h-[480px] max-h-[calc(100dvh-132px)] overflow-y-auto" : "h-[416px]"}`}
-        style={{ transform: open === "peek" ? "translateY(326px)" : "none" }}
-        onTouchStart={(e) => (touchY.current = e.touches[0].clientY)}
-        onTouchEnd={(e) => {
-          const dy = e.changedTouches[0].clientY - touchY.current;
-          if (dy < -30 && open === "peek") setSheet("list");
-          if (dy > 30 && open !== "peek") (selected ? setSelected(null) : setSheet("peek"));
+        style={{
+          transform: `translateY(${Math.max(0, (open === "peek" ? 326 : 0) + drag)}px)`,
+          transition: dragging.current ? "none" : undefined, // 끄는 동안은 손가락(마우스)을 바로 따라옴
         }}
       >
-        <button
-          aria-label={open === "peek" ? t("주변 장소 펼치기") : t("접기")}
-          onClick={() => (selected ? setSelected(null) : setSheet(sheet === "peek" ? "list" : "peek"))}
-          className="flex h-[46px] w-full justify-center pt-3"
+        {/* 손잡이 영역: 마우스·터치 둘 다 위아래로 끌 수 있음. 놓으면 한 단계씩 올라가거나 내려감 */}
+        <div
+          className="cursor-grab touch-none select-none active:cursor-grabbing"
+          onPointerDown={(e) => {
+            touchY.current = e.clientY;
+            dragging.current = true;
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }}
+          onPointerMove={(e) => dragging.current && setDrag(e.clientY - touchY.current)}
+          onPointerUp={(e) => {
+            const dy = e.clientY - touchY.current;
+            dragging.current = false;
+            setDrag(0);
+            if (Math.abs(dy) < 8) return; // 거의 안 움직였으면 아래 버튼 클릭으로 처리
+            moved.current = true;
+            if (dy < -40 && open === "peek") setSheet("list");
+            if (dy > 40 && open !== "peek") {
+              setSelected(null); // 장소 정보에서 내리면 바로 접힘
+              setSheet("peek");
+            }
+          }}
+          onPointerCancel={() => {
+            dragging.current = false;
+            setDrag(0);
+          }}
         >
-          <span className="h-1 w-10 rounded-full bg-[var(--border-strong)]" />
-        </button>
+          <button
+            aria-label={open === "peek" ? t("주변 장소 펼치기") : t("접기")}
+            onClick={() => {
+              if (moved.current) return void (moved.current = false); // 끌기 직후 따라오는 클릭은 무시
+              if (open === "peek") setSheet("list");
+              else {
+                setSelected(null);
+                setSheet("peek");
+              }
+            }}
+            className="flex h-[46px] w-full justify-center pt-3"
+          >
+            <span className="h-1 w-10 rounded-full bg-[var(--border-strong)]" />
+          </button>
+        </div>
 
         {open !== "detail" && (
           <div className="px-6">

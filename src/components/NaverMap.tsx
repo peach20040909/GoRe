@@ -13,7 +13,7 @@ type NaverMaps = {
   Map: new (el: HTMLElement, opts: Record<string, unknown>) => { fitBounds(b: unknown, m?: unknown): void; destroy?(): void };
   LatLng: new (lat: number, lng: number) => LatLng;
   LatLngBounds: new (a: LatLng, b: LatLng) => { extend(p: LatLng): void };
-  Marker: new (opts: Record<string, unknown>) => unknown;
+  Marker: new (opts: Record<string, unknown>) => { setPosition(p: LatLng): void; setMap(m: unknown): void };
   Event: { addListener(target: unknown, name: string, fn: () => void): void };
 };
 declare global {
@@ -24,6 +24,12 @@ declare global {
 }
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID;
+
+// 내 위치: 흰 테두리 빨간 점 + 퍼지는 고리 (위치 권한을 허용했을 때만)
+const ME_DOT = `<div style="transform:translate(-50%,-50%);position:relative;width:18px;height:18px;pointer-events:none">
+  <span style="position:absolute;inset:-9px;border-radius:999px;background:rgba(229,57,53,.25);animation:gore-me 1.8s ease-out infinite"></span>
+  <span style="position:absolute;inset:0;border-radius:999px;background:#e53935;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></span>
+  <style>@keyframes gore-me{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.6);opacity:0}}</style></div>`;
 let sdk: Promise<NaverMaps> | null = null;
 
 function loadSdk(): Promise<NaverMaps> {
@@ -57,9 +63,10 @@ type Props = {
   height?: string;
   square?: boolean;
   compact?: boolean;
+  showMe?: boolean; // 내 위치를 빨간 점으로 표시
 };
 
-export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, className, height = "min(70vh, 480px)", square, compact = false }: Props) {
+export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, className, height = "min(70vh, 480px)", square, compact = false, showMe = false }: Props) {
   const { t } = useLanguage();
   const el = useRef<HTMLDivElement>(null);
   const fit = useRef<((bottom: number) => void) | null>(null);
@@ -73,6 +80,7 @@ export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, classN
     if (!CLIENT_ID || !el.current) return;
     let disposed = false;
     let map: InstanceType<NaverMaps["Map"]> | undefined;
+    let watchId: number | null = null;
     window.navermap_authFailure = () => setError("지도 인증에 실패했어요. 네이버 콘솔의 웹 서비스 URL을 확인해 주세요");
     const pts = places.filter((p) => p.lat != null && p.lng != null);
     loadSdk()
@@ -103,11 +111,26 @@ export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, classN
             onSelect?.(p.slug);
           });
         });
+        // 내 위치 빨간 점: 권한을 허용하면 표시하고 움직이면 따라감. 거부·실패면 조용히 안 보임
+        if (showMe && navigator.geolocation) {
+          let me: InstanceType<NaverMaps["Marker"]> | null = null;
+          watchId = navigator.geolocation.watchPosition(
+            ({ coords }) => {
+              if (disposed || !map) return;
+              const at = new maps.LatLng(coords.latitude, coords.longitude);
+              if (me) me.setPosition(at);
+              else me = new maps.Marker({ position: at, map, zIndex: 200, clickable: false, icon: { content: ME_DOT } });
+            },
+            () => {},
+            { enableHighAccuracy: true, maximumAge: 10_000, timeout: 15_000 },
+          );
+        }
       })
       .catch(() => setError("지도를 불러오지 못했어요")); // SDK 내부 오류 문구(영어)는 사용자에게 보이지 않게
     return () => {
       disposed = true;
       fit.current = null;
+      if (watchId != null) navigator.geolocation.clearWatch(watchId);
       // 인증 실패(등록 안 된 주소·미리보기 배포)한 지도는 destroy가 SDK 안에서 터져 화면 전체가 죽어서 막아 둠
       try {
         map?.destroy?.();
@@ -115,7 +138,7 @@ export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, classN
         /* 무시: 지도만 정리 못 한 것 */
       }
     };
-  }, [places, onSelect, compact, t]);
+  }, [places, onSelect, compact, t, showMe]);
 
   useEffect(() => fit.current?.(bottomInset), [bottomInset]);
 
