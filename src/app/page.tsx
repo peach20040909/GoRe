@@ -1,12 +1,40 @@
-// 해커톤 시작 전 임시 화면. 아이디어 정해지면 랜딩 페이지로 교체.
+"use client";
+// 홈: 기억이 걸린 장소 지도. 핀을 누르면 그 장소의 매개체(3D·AR) 화면으로.
+// 디자인 확정 전 임시 레이아웃 — 지도 부품(NaverMap)과 데이터 흐름은 그대로 쓰면 됨.
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { NaverMap, type MapPlace } from "@/components/NaverMap";
+
 export default function Home() {
+  const router = useRouter();
+  const [places, setPlaces] = useState<MapPlace[] | null>(null);
+
+  useEffect(() => {
+    fetch("/api/places")
+      .then((r) => r.json())
+      .then((d: { places?: MapPlace[] }) => setPlaces(d.places ?? []))
+      .catch(() => setPlaces([]));
+  }, []);
+
+  const open = useCallback((slug: string) => router.push(`/preview/ar?place=${slug}`), [router]);
+
   return (
-    <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
-      <h1 className="text-4xl font-extrabold leading-tight tracking-tight sm:text-6xl">
-        2026 해커톤 대회
-        <br />
-        <span className="text-brand">파이팅! 🔥</span>
-      </h1>
+    <div className="pt-6">
+      <p className="text-sm font-semibold tracking-wide text-brand">GO AGAIN. RECONNECT.</p>
+      <h1 className="mt-1 text-2xl font-extrabold">기억을 맡겨 둘 장소를 골라 보세요</h1>
+      <div className="mt-4">{places ? <NaverMap places={places} onSelect={open} /> : <div className="skeleton" style={{ height: 480 }} />}</div>
+      {places && places.length > 0 && (
+        <ul className="mt-4 grid grid-cols-2 gap-2">
+          {places.map((p) => (
+            <li key={p.slug}>
+              <button onClick={() => open(p.slug)} className="card w-full p-4 text-left">
+                <span className="font-bold">{p.name_ko}</span>
+                <span className="block text-sm text-muted">기억 {p.memoryCount ?? 0}개</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

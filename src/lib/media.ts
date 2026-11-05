@@ -13,7 +13,8 @@ export const PLACE_MEDIA: Record<string, MediumModel> = {
     glb: "/models/hongje-bottle.glb",
     tintMaterials: ["Cascades in mist ink"],
   },
-  "ansan-jarakgil": { medium: "beacon", label: "봉화" },
+  gyeongbokgung: { medium: "paper", label: "원고지" },
+  dongnimmun: { medium: "lock", label: "자물쇠" },
   "demo-hall": {
     medium: "bottle",
     label: "유리병 편지",

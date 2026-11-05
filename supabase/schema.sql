@@ -102,3 +102,16 @@ insert into places (slug, name_ko, name_en, description) values
    '서대문구 안산을 도는 무장애 숲길. 나무 데크 산책로와 난간, 벚나무와 메타세쿼이아 숲, 도심이 내려다보이는 전망대가 있다.'),
   ('demo-hall', '발표장', 'Demo Hall',
    '명지대학교 인문캠퍼스 강의실. 칠판, 프로젝터 스크린, 강의용 책상과 의자가 있다. 시연용 장소.');
+
+-- 장소 추가·정리 (2026-11-06): 경복궁 추가, 시연 장소 이름을 명지대학교로
+insert into places (slug, name_ko, name_en, lat, lng, radius_m, description) values
+  ('gyeongbokgung', '경복궁', 'Gyeongbokgung Palace', 37.5788408, 126.9770162, 300,
+   '조선의 법궁. 붉은 기둥과 단청을 칠한 목조 전각, 기와지붕, 넓은 박석 마당, 근정전과 경회루(연못 위 누각), 뒤로 북악산이 보인다. 한복을 입은 관람객이 많다.')
+on conflict (slug) do nothing;
+update places set name_ko = '명지대학교', name_en = 'Myongji University' where slug = 'demo-hall';
+-- 안산 자락길 제외, 독립문 추가
+delete from places where slug = 'ansan-jarakgil' and not exists (select 1 from memories m where m.place_id = places.id);
+insert into places (slug, name_ko, name_en, lat, lng, radius_m, description) values
+  ('dongnimmun', '독립문', 'Independence Gate', 37.5718896, 126.9589747, 250,
+   '서대문독립공원 안의 화강암 석조 문. 개선문처럼 가운데 아치가 뚫려 있고 위에 "독립문" 글씨가 새겨져 있다. 주변에 넓은 광장과 나무, 근처에 붉은 벽돌의 서대문형무소역사관이 있다.')
+on conflict (slug) do nothing;
