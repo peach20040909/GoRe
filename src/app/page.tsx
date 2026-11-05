@@ -1,7 +1,7 @@
 "use client";
 // 홈 (Figma: 홈 · 지도 기본 / 주변 장소 목록 / 핀 선택 · 장소 정보)
-// 지도 + 아래 시트. 시트는 접힘 → 주변 장소 목록 → 핀/행을 누르면 장소 정보 → "여기에 마음 걸기"로 고리 플로우
-import { useCallback, useEffect, useState } from "react";
+// 지도 + 아래 시트. 시트는 접힘 → 주변 장소 목록 → 핀/행을 누르면 장소 정보 → "여기에 고리 걸기"로 고리 플로우
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { NaverMap, type MapPlace } from "@/components/NaverMap";
 import { BottomNav, Character, Header } from "@/components/ds";
@@ -14,13 +14,14 @@ const HOME: Record<string, { category: string; address: string }> = {
   dongnimmun: { category: "역사 유적 · 독립공원", address: "서울 서대문구 통일로 251" },
   "demo-hall": { category: "대학 캠퍼스", address: "서울 서대문구 거북골로 34" },
 };
-const MAP_H = "calc(100dvh - 188px - 76px + 16px)";
+const MAP_H = "calc(100dvh - 56px - 76px - 90px)"; // 접힌 시트(90px) 위에서 끝나야 네이버 로고가 안 가려짐
 
 /* eslint-disable @next/next/no-img-element */
 export default function Home() {
   const [places, setPlaces] = useState<MapPlace[] | null>(null);
   const [sheet, setSheet] = useState<"peek" | "list">("peek");
   const [selected, setSelected] = useState<MapPlace | null>(null);
+  const touchY = useRef(0);
 
   useEffect(() => {
     fetch("/api/places")
@@ -36,17 +37,26 @@ export default function Home() {
   return (
     <div className="relative">
       <Header title="홈" />
-      <h2 className="t-title px-6 pb-4 pt-2">
-        오늘의 마음을
-        <br />
-        어디에 남길까요?
-      </h2>
-      {places ? <NaverMap places={places} onSelect={select} height={MAP_H} /> : <div className="skeleton" style={{ height: MAP_H }} />}
+      {/* 지도는 헤더 아래 꽉 차게, 제목은 지도 위에 띄움 (Figma 홈 · 지도 기본) */}
+      <div className="relative isolate">
+        {places ? <NaverMap places={places} onSelect={select} height={MAP_H} square /> : <div className="skeleton !rounded-none" style={{ height: MAP_H }} />}
+        <h2 className="t-title pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 via-white/80 to-transparent px-6 pb-10 pt-4">
+          오늘의 고리를
+          <br />
+          어디에 남길까요?
+        </h2>
+      </div>
 
-      {/* 바텀 시트 (DS / Nearby places sheet · DS / Place detail sheet) */}
+      {/* 바텀 시트 (DS / Nearby places sheet · DS / Place detail sheet). 손잡이를 누르거나 위로 밀면 올라옴 */}
       <section
         className="fixed inset-x-0 bottom-[76px] z-20 mx-auto h-[416px] max-w-[430px] rounded-t-3xl bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-transform duration-300"
-        style={{ transform: open === "peek" ? "translateY(370px)" : "none" }}
+        style={{ transform: open === "peek" ? "translateY(326px)" : "none" }}
+        onTouchStart={(e) => (touchY.current = e.touches[0].clientY)}
+        onTouchEnd={(e) => {
+          const dy = e.changedTouches[0].clientY - touchY.current;
+          if (dy < -30 && open === "peek") setSheet("list");
+          if (dy > 30 && open !== "peek") (selected ? setSelected(null) : setSheet("peek"));
+        }}
       >
         <button
           aria-label={open === "peek" ? "주변 장소 펼치기" : "접기"}
@@ -59,7 +69,7 @@ export default function Home() {
         {open !== "detail" && (
           <div className="px-6">
             <p className="t-heading">주변 장소</p>
-            <p className="t-caption mt-1 text-muted">지금 마음을 남길 수 있는 곳</p>
+            <p className="t-caption mt-1 text-muted">지금 고리를 남길 수 있는 곳</p>
             <ul className="mt-3 flex h-[280px] flex-col gap-2 overflow-y-auto pb-4">
               {(places ?? []).map((p) => (
                 <li key={p.slug}>
@@ -93,7 +103,7 @@ export default function Home() {
               <img src={g.sealed} alt="봉인된 고리" className="h-[88px] min-w-0 flex-1 rounded-lg bg-canvas object-cover" />
               <img src={g.opened} alt="열린 고리" className="h-[88px] min-w-0 flex-1 rounded-lg bg-canvas object-cover" />
             </div>
-            <Link href={`/gori/${selected.slug}`} className="btn mt-6 w-full">여기에 마음 걸기</Link>
+            <Link href={`/gori/${selected.slug}`} className="btn mt-6 w-full">여기에 고리 걸기</Link>
           </div>
         )}
       </section>

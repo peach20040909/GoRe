@@ -136,7 +136,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
         <div className="relative mx-0 h-[calc(100dvh-56px-92px-76px)] min-h-[360px]">
           <CameraFeed ref={cam} />
           <div className="relative px-6 pt-4">
-            <p className="t-heading">이 장소에 마음을 걸어요</p>
+            <p className="t-heading">이 장소에 고리를 걸어요</p>
             <p className="t-label mt-2 text-muted">카메라로 지금 머무는 장소를 비춰주세요.</p>
           </div>
           {errorBox}
@@ -209,7 +209,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
       {/* 07 모델 미리보기 */}
       {step === "model" && (
         <section className="px-6">
-          <p className="t-title mt-2">이 고리로 마음을 남겨요</p>
+          <p className="t-title mt-2">이 고리를 걸어요</p>
           <p className="t-body text-muted">{gori.name} · {placeName}</p>
           <div className="mx-auto my-8 size-[280px] overflow-hidden rounded-[61px] bg-canvas">
             <ModelViewer src={asset.model} alt={gori.name} arEnabled={false} style={{ height: 280, background: "var(--surface-canvas)" }} />
