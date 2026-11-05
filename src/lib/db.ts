@@ -227,13 +227,20 @@ export async function uploadPhoto(dataUrl: string): Promise<string> {
 /* ───────────────────────── users ───────────────────────── */
 
 /**
+ * users 를 읽을 때는 항상 이 컬럼만 고른다 (select=* 금지).
+ * users 에는 email / password_hash 가 있어서, 모든 컬럼을 읽으면 해시가 코드 안으로 섞여 들어온다.
+ * 해시가 필요한 곳은 src/lib/auth.ts 의 로그인뿐이다.
+ */
+const USER_COLUMNS = "id,device_id,nickname,language,created_at";
+
+/**
  * device_id 로 유저 upsert 후 행을 돌려준다.
  * nickname 이 비어 있으면 기존 닉네임을, language 를 생략하면 기존 언어를 덮어쓰지 않는다.
  */
 export async function upsertUser(deviceId: string, nickname?: string | null, language?: string): Promise<UserRow> {
   assertDeviceId(deviceId);
   const nick = typeof nickname === "string" ? nickname.trim().slice(0, 40) : "";
-  const rows = await db<UserRow[]>("/users?on_conflict=device_id", {
+  const rows = await db<UserRow[]>(`/users?on_conflict=device_id&select=${USER_COLUMNS}`, {
     method: "POST",
     prefer: "resolution=merge-duplicates,return=representation",
     body: {
@@ -250,7 +257,7 @@ export async function upsertUser(deviceId: string, nickname?: string | null, lan
 /** device_id 로 유저 조회. 없으면 null */
 export async function getUserByDevice(deviceId: string): Promise<UserRow | null> {
   assertDeviceId(deviceId);
-  const rows = await db<UserRow[]>(`/users?device_id=eq.${encodeURIComponent(deviceId)}&select=*&limit=1`);
+  const rows = await db<UserRow[]>(`/users?device_id=eq.${encodeURIComponent(deviceId)}&select=${USER_COLUMNS}&limit=1`);
   return rows?.[0] ?? null;
 }
 
