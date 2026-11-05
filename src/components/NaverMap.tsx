@@ -104,8 +104,17 @@ export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, classN
           });
         });
       })
-      .catch((e: Error) => setError(e.message));
-    return () => { disposed = true; fit.current = null; map?.destroy?.(); };
+      .catch(() => setError("지도를 불러오지 못했어요")); // SDK 내부 오류 문구(영어)는 사용자에게 보이지 않게
+    return () => {
+      disposed = true;
+      fit.current = null;
+      // 인증 실패(등록 안 된 주소·미리보기 배포)한 지도는 destroy가 SDK 안에서 터져 화면 전체가 죽어서 막아 둠
+      try {
+        map?.destroy?.();
+      } catch {
+        /* 무시: 지도만 정리 못 한 것 */
+      }
+    };
   }, [places, onSelect, compact, t]);
 
   useEffect(() => fit.current?.(bottomInset), [bottomInset]);

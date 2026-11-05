@@ -22,6 +22,7 @@ const rows = `
 이메일 또는 비밀번호를 확인해 주세요|Check your email or password.|メールアドレスとパスワードを確認してください。|请检查邮箱或密码。
 가입하지 못했어요. 다시 시도해 주세요.|Couldn't create the account. Please try again.|登録できませんでした。もう一度お試しください。|无法注册，请重试。
 서버 오류가 발생했어요. 잠시 후 다시 시도해 주세요.|A server error occurred. Please try again shortly.|サーバーエラーです。しばらくしてからお試しください。|服务器发生错误，请稍后重试。
+인터넷 연결을 확인하고 다시 시도해 주세요|Check your internet connection and try again.|インターネット接続を確認して、もう一度お試しください。|请检查网络连接后重试。
 AR로 거치대 놓아 보기|Place the stand in AR|ARで掛け台を置く|通过AR放置挂架
 고리 거치대|Gori stand|ゴリの掛け台|Gori挂架
 AR로 이 자리에 놓아 보기|Place here in AR|ARでここに置く|通过AR放在这里

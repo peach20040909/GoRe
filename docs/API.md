@@ -1,4 +1,4 @@
-# 고리(Go, Re) — API 명세 (팀 분담용)
+# 고리(Go:RE) — API 명세 (팀 분담용)
 
 서울의 장소에 지금의 기억을 맡기고, 다시 와야 열리는 AI 기록 서비스.
 DB 구조는 [`supabase/schema.sql`](../supabase/schema.sql) 참고.

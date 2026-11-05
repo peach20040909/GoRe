@@ -103,6 +103,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // 위치는 이미 확인됨 → 사진 기준은 너그럽게. 시연 모드는 발표가 끊기지 않게 항상 열림 (재회 리포트는 AI가 씀)
     // ponytail: demo 플래그는 누구나 보낼 수 있음 — 정식 서비스에선 서버에서 막을 것
     const opened = !!demo || (judge.sameSpot && judge.confidence >= SAME_SPOT_MIN) || judge.confidence >= GPS_OK_MIN;
+    // 열렸는데 AI가 '다른 자리'로 봐서 리포트를 비워 두면(시연 모드 등) 기본 재회 문구로 채움
+    const report = opened
+      ? judge.reunionReport ?? t("그날 이 자리에 남긴 기억을 다시 꺼냈어요. 그 사이 계절이 바뀌었네요. 지금의 고리도 하나 더 걸어 볼까요?")
+      : null;
 
     await db("revisits", {
       method: "POST",
@@ -115,7 +119,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         same_spot: opened,
         confidence: judge.confidence,
         reason: judge.reason,
-        reunion_report: opened ? judge.reunionReport : null,
+        reunion_report: report,
       },
     });
 
@@ -139,7 +143,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       sameSpot: true,
       confidence: judge.confidence,
       reason: judge.reason,
-      reunionReport: judge.reunionReport,
+      reunionReport: report,
       memory: updated,
       mocked: judge.mocked,
     });

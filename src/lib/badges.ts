@@ -3,7 +3,7 @@
 export type Badge = { id: string; name: string; category: string; motif: string; description: string; places: string[] };
 
 export const BADGES: Badge[] = [
-  { id: "namsan", name: "남산의 능선", category: "자연·경관", motif: "남산 · N서울타워", places: ["ansan-beacon"],
+  { id: "namsan", name: "남산의 능선", category: "자연·경관", motif: "안산 봉수대", places: ["ansan-beacon"],
     description: "겹겹이 이어진 능선과 둥근 달을 담았어요. 오늘 남긴 고리를 기억하는 배지예요." },
   { id: "hongje", name: "홍제의 물결", category: "자연·경관", motif: "홍제폭포", places: ["hongje-falls"],
     description: "바위를 타고 떨어지는 홍제폭포의 물결을 담은 배지예요." },

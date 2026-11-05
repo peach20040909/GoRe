@@ -88,10 +88,13 @@ export function placesNearby<T extends PlaceLite>(places: T[], pos: LatLng): (T 
 
 /** JSON API 호출. 실패하면 서버가 준 한국어 메시지로 throw → 화면에서 그대로 보여주면 됨 */
 export async function api<T>(url: string, body?: unknown): Promise<T> {
+  // 네트워크가 끊기면 브라우저 영어 오류("Failed to fetch") 대신 안내 문구로
   const res = await fetch(url, {
     method: body === undefined ? "GET" : "POST",
     headers: body === undefined ? undefined : { "content-type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
+  }).catch(() => {
+    throw new Error("인터넷 연결을 확인하고 다시 시도해 주세요");
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((data as { error?: string }).error || "잠시 후 다시 시도해 주세요");

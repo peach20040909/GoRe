@@ -1,4 +1,4 @@
-# 고리 (Go, Re)
+# 고리 (Go:RE)
 
 ### GO AGAIN. RECONNECT.
 
