@@ -8,6 +8,9 @@ import { NaverMap, type MapPlace } from "@/components/NaverMap";
 import { BottomNav, Character, Header } from "@/components/ds";
 import { goriAsset } from "@/lib/goris";
 import { mediaFor } from "@/lib/media";
+import { loadMemories } from "@/lib/memories";
+import { getToken } from "@/lib/session";
+import { BADGES, earnedBadges } from "@/lib/badges";
 
 // 홈 지도에 보일 장소만 (다른 장소는 DB에 있고 고리·해금은 그대로 동작)
 const HOME: Record<string, { category: string; address: string }> = {
@@ -26,6 +29,17 @@ export default function Home() {
   const [selected, setSelected] = useState<MapPlace | null>(null);
   const [exploring, setExploring] = useState(false);
   const touchY = useRef(0);
+  const [summary, setSummary] = useState<{ memories: number; badges: number } | null>(null);
+  const [summaryError, setSummaryError] = useState(false);
+
+  useEffect(() => {
+    if (!getToken()) { setSummary({ memories: 0, badges: 0 }); return; }
+    let active = true;
+    loadMemories().then((memories) => {
+      if (active) setSummary({ memories: memories.length, badges: earnedBadges(memories).size });
+    }).catch(() => { if (active) setSummaryError(true); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     fetch("/api/places")
@@ -44,7 +58,7 @@ export default function Home() {
   return (
     <div className="relative">
       {exploring ? <Header title={t("홈")} back={() => { setExploring(false); setSelected(null); setSheet("peek"); }} /> : (
-        <div className="home-hero pb-8">
+        <div className="home-hero !overflow-visible pb-0">
           <Header title={t("홈")} inverse />
           <div className="relative z-10 px-6 pb-2 pt-3">
             <h1 className="t-title relative z-10 w-[62%]">{t("고리를 남기는")}<br />{t("가장 가까운 여행")}</h1>
@@ -52,9 +66,19 @@ export default function Home() {
             <button className="relative z-10 mt-6 h-10 rounded-xl bg-white px-4 text-base font-medium text-accent" onClick={() => { setExploring(true); setSheet("list"); }}>{t("주변 둘러보기")}</button>
           </div>
           <img src="/theme/pink-friend.png" alt="" className="hero-friend" />
+          <div className="relative z-10 mx-6 grid translate-y-3 grid-cols-2 gap-3">
+            <Link href="/memories" className="rounded-2xl border border-line bg-white px-4 py-3 text-ink shadow-sm">
+              <p className="t-caption text-muted">{t("남긴 고리")}</p>
+              <p className="t-sub mt-1 text-accent">{summary ? t("{count}개의 고리", { count: summary.memories }) : summaryError ? t("확인 필요") : "…"}</p>
+            </Link>
+            <Link href="/collection" className="rounded-2xl border border-line bg-white px-4 py-3 text-ink shadow-sm">
+              <p className="t-caption text-muted">{t("모은 배지")}</p>
+              <p className="t-sub mt-1 text-accent">{summary ? `${summary.badges} / ${BADGES.length}` : summaryError ? t("확인 필요") : "…"}</p>
+            </Link>
+          </div>
         </div>
       )}
-      {!exploring && <h2 className="t-sub px-6 pb-3 pt-6">{t("우리 동네, 새로운 기억")}</h2>}
+      {!exploring && <h2 className="t-sub px-6 pb-3 pt-8">{t("우리 동네, 새로운 기억")}</h2>}
       {/* 지도는 헤더 아래 꽉 차게, 제목은 지도 위에 띄움 (Figma 홈 · 지도 기본) */}
       <div className={`relative isolate ${exploring ? "" : "mx-6 overflow-hidden rounded-3xl"}`}>
         {places ? (
@@ -68,10 +92,10 @@ export default function Home() {
             }}
             compact={!exploring}
             bottomInset={!exploring || open === "peek" ? 0 : (open === "detail" ? 480 : 416) - 90} // 펼친 시트가 지도를 덮는 높이
-            height={exploring ? MAP_H : "max(246px, calc(100dvh - 480px))"}
+            height={exploring ? MAP_H : "max(220px, calc(100dvh - 560px))"}
             square
           />
-        ) :<div className="skeleton !rounded-none" style={{ height: exploring ? MAP_H : "max(246px, calc(100dvh - 480px))" }} />}
+        ) :<div className="skeleton !rounded-none" style={{ height: exploring ? MAP_H : "max(220px, calc(100dvh - 560px))" }} />}
         {!exploring && <button type="button" aria-label={t("지도에서 주변 장소 보기")} className="absolute inset-0 z-10 cursor-pointer rounded-3xl" onClick={() => { setExploring(true); setSheet("list"); }} />}
         {exploring && <h2 className="t-title pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 via-white/80 to-transparent px-6 pb-10 pt-4">{t("오늘의 고리를")}<br />{t("어디에 남길까요?")}</h2>}
       </div>

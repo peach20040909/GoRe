@@ -7,7 +7,7 @@ import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ModelViewer } from "@/components/ModelViewer";
-import { MemoryCard } from "@/components/MemoryCard";
+import { MemoryLetter } from "@/components/MemoryLetter";
 import { CameraFeed, type CameraHandle } from "@/components/CameraFeed";
 import { BottomNav, Header, MediaTile, OptionRow } from "@/components/ds";
 import { api, browserLanguage, distanceM, getPosition, resizeImage } from "@/lib/client";
@@ -259,7 +259,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
       {/* 09 열람 조건 (+ AI가 만든 기억 카드) */}
       {step === "unlock" && draft && (
         <section className="px-6">
-          <MemoryCard card={draft.card} engraving={draft.engraving} title={draft.title} placeName={placeName} date={new Date().toLocaleDateString(locale)} medium={gori.cardShape} className="mx-auto mt-2 w-full max-w-[240px]" />
+          <MemoryLetter title={draft.title} body={content} place={placeName} date={new Date().toLocaleDateString(locale)} coverImage={asset.sealed} photoUrl={photo ?? photo2} readable className="mx-auto mt-2 w-full max-w-[342px]" />
           <p className="t-sub mt-6">{t("내용 공개 범위")}</p>
           <div className="mt-4 flex flex-col gap-4" role="radiogroup">
             <OptionRow title={t("나만 보기")} desc={t("나에게만 편지와 사진이 보여요.")} selected={!isPublic} onSelect={() => setIsPublic(false)} />
@@ -279,7 +279,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
       {/* 완료 */}
       {step === "done" && draft && (
         <section className="px-6 pt-10 text-center">
-          <MemoryCard card={draft.card} engraving={draft.engraving} title={draft.title} placeName={placeName} date={new Date().toLocaleDateString(locale)} medium={gori.cardShape} className="mx-auto w-full max-w-[260px]" />
+          <MemoryLetter title={draft.title} body={content} place={placeName} date={new Date().toLocaleDateString(locale)} coverImage={asset.sealed} photoUrl={photo ?? photo2} readable className="mx-auto mt-2 w-full max-w-[342px]" />
           <p className="t-title mt-6">{t("고리를 걸었어요")}</p>
           <p className="t-label mt-2 text-muted">{t(draft.unlockOptions[unlockIdx]?.note ?? "")}</p>
           <div className="mt-8 flex flex-col gap-3">

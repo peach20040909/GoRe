@@ -33,11 +33,11 @@ export default function MemoriesPage() {
   return (
     <div className="min-h-dvh">
       <Header title={t("추억")} />
-      <div className="character-banner mx-6 mb-5 mt-2 h-[92px] bg-subtle px-5 py-4">
-        <p className="relative z-10 text-[19px] font-bold leading-[27px]">{t("다시 꺼내 보는")}<br />{t("우리의 순간")}</p>
-        <img src="/theme/pink-friend.png" alt="" className="-right-0.5 top-1 h-[90px] w-[90px]" />
+      <div className="character-banner mx-6 mb-2 mt-2 flex h-24 items-center bg-subtle px-4">
+        <p className="relative z-10 max-w-[72%] text-[20px] font-bold leading-7 tracking-[-0.025em]">{t("다시 꺼내 보는")}<br />{t("우리의 순간")}</p>
+        <img src="/theme/pink-friend.png" alt="" className="right-2 bottom-0 h-20 w-20" />
       </div>
-      <div className="flex flex-wrap gap-2 px-6 pb-4 pt-2.5" role="group" aria-label={t("관광자원 분류 필터")}>
+      <div className="flex gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap px-6 pb-4 pt-2.5 [scroll-padding-inline:24px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label={t("관광자원 분류 필터")}>
         <button className={chip(!filter)} aria-pressed={!filter} onClick={() => { setFilter(null); setMenu(null); }}>{t("전체")}</button>
         {CATEGORIES.map((category) => (
           <button key={category} className={chip(filter === category)} aria-pressed={filter === category} onClick={() => { setFilter(category); setMenu(null); }}>{t(category)}</button>

@@ -2,6 +2,21 @@ import type { Language } from "./language";
 
 // Korean source copy is the key. Entries contain English, Japanese and simplified Chinese.
 const rows = `
+남긴 고리|Gori left|残したゴリ|留下的Gori
+모은 배지|Badges collected|集めたバッジ|收集的徽章
+{count}개의 고리|{count} Gori|{count}個のゴリ|{count}个Gori
+확인 필요|Check again|再確認|请重试
+다시 꺼내 보는 우리의 순간|Our moments, revisited|また開く、私たちの瞬間|再次打开，我们的瞬间
+기억의 편지|Memory letter|思い出の手紙|回忆之信
+이곳에 남긴 기억|A memory left here|この場所に残した思い出|留在此地的回忆
+{place}의 추억|Memories of {place}|{place}の思い出|{place}的回忆
+잠가둔 기억|A memory kept safe|閉じ込めた思い出|封存的回忆
+눌러서 편지 읽기|Tap to read the letter|タップして手紙を読む|点击阅读信件
+현장 인증 후 편지 열기|Verify your visit to open|現地確認をして開く|现场验证后开启信件
+편지 내용|Letter contents|手紙の内容|信件内容
+자물쇠 다시 보기|Back to the Gori|ゴリに戻る|返回Gori
+그날의 사진과 기억을 한 장의 편지에 담았어요.|A letter holding the photos and memories of that day.|あの日の写真と思い出を一枚の手紙に。|将那天的照片与回忆装进一封信。
+확인|Done|確認|确定
 서울 서대문구 연희동 170-181|170-181 Yeonhui-dong, Seodaemun-gu, Seoul|ソウル市西大門区延禧洞170-181|首尔西大门区延禧洞170-181
 이미 가입된 이메일이에요|This email is already registered.|このメールアドレスは登録済みです。|此邮箱已注册。
 이메일 또는 비밀번호를 확인해 주세요|Check your email or password.|メールアドレスとパスワードを確認してください。|请检查邮箱或密码。

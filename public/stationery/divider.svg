@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="294" height="16" viewBox="0 0 294 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Traditional ornamental divider" clip-path="url(#clip0_0_43)">
+<path id="Vector" d="M0 6H132M162 6H294" stroke-width="0.8" stroke="#BA8069"/>
+<path id="Vector_2" d="M0 9H132M162 9H294" stroke-width="0.8" stroke="#52644B"/>
+<path id="Vector_3" d="M147 2C143 -1 140 3 143 6C138 5 136 11 141 12C141 17 148 17 147 12C151 15 155 10 151 7C154 4 151 0 147 2Z" stroke-width="1.2" stroke="#BA8069"/>
+<path id="Vector_4" d="M138 6L135 8L138 10M156 6L159 8L156 10" stroke="#52644B"/>
+</g>
+<defs>
+<clipPath id="clip0_0_43">
+<rect width="294" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+.memory-letter { font-family: "Gowun Batang", "Noto Serif CJK KR", Georgia, serif; }
+.memory-handwriting { font-family: "Nanum Pen Script", "Gowun Batang", cursive; }
+.letter-reveal { animation: letter-reveal 350ms ease-out both; background: repeating-linear-gradient(to bottom, transparent 0 31.4px, rgb(202 200 176 / .35) 31.4px 32px); }
+@keyframes letter-reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .letter-reveal { animation: none; } }
+
 /* Figma 테마 바레이션 / 코발트 커넥트 (493:4113) */
 :root {
   --surface-base: #ffffff;
