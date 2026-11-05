@@ -47,7 +47,7 @@ export default function Home() {
               setSelected(null);
               setSheet("peek");
             }}
-            bottomInset={open === "peek" ? 0 : 416 - 90} // 펼친 시트가 지도를 덮는 높이
+            bottomInset={open === "peek" ? 0 : (open === "detail" ? 480 : 416) - 90} // 펼친 시트가 지도를 덮는 높이
             height={MAP_H}
             square
           />
@@ -61,7 +61,7 @@ export default function Home() {
 
       {/* 바텀 시트 (DS / Nearby places sheet · DS / Place detail sheet). 손잡이를 누르거나 위로 밀면 올라옴 */}
       <section
-        className="fixed inset-x-0 bottom-[76px] z-20 mx-auto h-[416px] max-w-[430px] rounded-t-3xl bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-transform duration-300"
+        className={`fixed inset-x-0 bottom-[76px] z-20 mx-auto max-w-[430px] rounded-t-3xl bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-transform duration-300 ${open === "detail" ? "h-[480px] max-h-[calc(100dvh-132px)] overflow-y-auto" : "h-[416px]"}`}
         style={{ transform: open === "peek" ? "translateY(326px)" : "none" }}
         onTouchStart={(e) => (touchY.current = e.touches[0].clientY)}
         onTouchEnd={(e) => {
@@ -112,8 +112,8 @@ export default function Home() {
             </div>
             <p className="t-caption mt-3 text-muted">이곳의 고리 · {mediaFor(selected.slug).label} · 남겨진 기억 {selected.memoryCount ?? 0}개</p>
             <div className="mt-2 flex gap-2.5">
-              <img src={g.sealed} alt="봉인된 고리" className="h-[88px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
-              <img src={g.opened} alt="열린 고리" className="h-[88px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
+              <img src={g.sealed} alt="봉인된 고리" className="h-[152px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
+              <img src={g.opened} alt="열린 고리" className="h-[152px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
             </div>
             <Link href={`/gori/${selected.slug}`} className="btn mt-6 w-full">여기에 고리 걸기</Link>
           </div>
