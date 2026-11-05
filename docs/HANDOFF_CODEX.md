@@ -34,6 +34,8 @@ npx next start -p 3000
   - `/gori` 하단 탭: 가장 가까운 장소로 이동
   - `/memories` 02 추억(장소 칩 필터 + 사진 카드), `/memories/[id]` 상세(잠김이면 사진+GPS로 열기 → 재회 리포트)
   - `/collection` 04 수집 배지 12종, `/collection/[id]` 05 배지 상세 (배지↔장소 연결: `src/lib/badges.ts`)
+  - `/memories/[id]/delete` 고리 삭제 (추억 카드 … → 장소 확인 → 자물쇠 풀기: 위치 필수, 동행 조건이면 동행자 확인(웹이라 BLE는 흉내) → 완료). API: `DELETE /api/memories/[id]` (본인 + 장소 반경 안, demo는 건너뜀)
+  - `/my` 마이 (내 추억·내 수집 개수, 설정 → 로그아웃)
   - `/login` 로그인/회원가입 (메뉴에는 노출 안 함, 비밀번호 찾기는 목업)
 - 데이터
   - 고리 18종: `src/lib/goris.ts` + 파일 `public/goris/<id>/{sealed,opened,thumb}.webp, model.glb`
