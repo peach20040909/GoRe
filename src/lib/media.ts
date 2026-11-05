@@ -23,3 +23,10 @@ const CHARACTER: Record<string, string> = {
 };
 export const characterFor = (slug?: string | null) => `/ds/char-${CHARACTER[slug ?? ""] ?? "heart"}.webp`;
 export const characterLgFor = (slug?: string | null) => characterFor(slug).replace(".webp", "-lg.webp");
+
+// 장소별 3D 거치대 (팀 Blender 제작, public/stands/). 고리를 거는 실물 크기 자물쇠 걸이. 애니메이션: 고리를 걸어 주는 동작 1회
+const STAND: Record<string, string> = { gyeongbokgung: "palace", "hongje-falls": "hongje", "demo-hall": "campus", dongnimmun: "independence" };
+export function standFor(slug?: string | null) {
+  const n = STAND[slug ?? ""];
+  return n ? { glb: `/stands/${n}.glb`, usdz: `/stands/${n}.usdz`, image: `/stands/${n}.webp` } : null;
+}

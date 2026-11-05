@@ -12,7 +12,7 @@ import { CameraFeed, type CameraHandle } from "@/components/CameraFeed";
 import { BottomNav, Header, MediaTile, OptionRow } from "@/components/ds";
 import { api, browserLanguage, distanceM, getPosition, resizeImage } from "@/lib/client";
 import { goriAsset, goriById } from "@/lib/goris";
-import { characterLgFor, mediaFor } from "@/lib/media";
+import { characterLgFor, mediaFor, standFor } from "@/lib/media";
 import { getToken, isDemo } from "@/lib/session";
 import type { Draft } from "@/lib/prompts";
 
@@ -28,6 +28,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
   const router = useRouter();
   const gori = goriById(mediaFor(slug).goriId)!;
   const asset = goriAsset(gori.id);
+  const stand = standFor(slug);
   const cam = useRef<CameraHandle>(null);
   const [demo, setDemo] = useState(false);
   const [place, setPlace] = useState<Place | null>(null);
@@ -117,7 +118,7 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
     try {
       await wait(1100);
       setHang("hang");
-      await wait(1500);
+      await wait(stand ? 2900 : 1500); // 거치대 '고리 걸기' 애니메이션 길이(약 2.8초)만큼 기다림
       setHang("leave");
       await Promise.all([save, wait(900)]);
       go("done");
@@ -166,23 +167,39 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
         <div className="relative">
           <Header title={`${placeName} · AR`} back={hang === "idle" ? () => go("unlock") : undefined} />
         </div>
-        {/* 걸린 고리 */}
-        <div
-          className="absolute inset-x-0 top-[14%] h-[220px] transition-all duration-700"
-          style={{ opacity: hang === "hang" || hang === "leave" ? 1 : 0, transform: `translateY(${hang === "hang" || hang === "leave" ? 0 : -120}px)` }}
-        >
-          <div className={hang === "hang" ? "animate-[swing_1.2s_ease-out]" : ""} style={{ transformOrigin: "50% 0" }}>
-            <ModelViewer src={asset.model} alt={t(gori.name)} arEnabled={false} style={{ height: 220, background: "transparent" }} />
+        {stand ? (
+          /* 장소 거치대: 처음부터 서 있고, 고리를 걸 때 거치대의 '고리 걸기' 애니메이션이 한 번 재생됨. AR 버튼으로 실물 크기로 놓아 볼 수 있음 */
+          <div className="absolute inset-x-0 top-[9%] h-[340px]">
+            <ModelViewer
+              src={stand.glb}
+              iosSrc={stand.usdz}
+              alt={`${placeName} · ${t("고리 거치대")}`}
+              arEnabled={hang === "idle"}
+              arLabel="AR로 거치대 놓아 보기"
+              play={hang === "hang" || hang === "leave"}
+              orbit="0deg 82deg auto"
+              style={{ height: 340, background: "transparent" }}
+            />
           </div>
-        </div>
+        ) : (
+          /* 거치대가 없는 장소: 고리가 위에서 내려와 흔들리며 걸림 */
+          <div
+            className="absolute inset-x-0 top-[14%] h-[220px] transition-all duration-700"
+            style={{ opacity: hang === "hang" || hang === "leave" ? 1 : 0, transform: `translateY(${hang === "hang" || hang === "leave" ? 0 : -120}px)` }}
+          >
+            <div className={hang === "hang" ? "animate-[swing_1.2s_ease-out]" : ""} style={{ transformOrigin: "50% 0" }}>
+              <ModelViewer src={asset.model} alt={t(gori.name)} arEnabled={false} style={{ height: 220, background: "transparent" }} />
+            </div>
+          </div>
+        )}
         {/* 캐릭터: 왼쪽 아래에서 엿보다가 → 가운데로 걸어와 고리를 걸고 → 오른쪽으로 퇴장 */}
         <img
           src={characterLgFor(slug)}
           alt=""
           className="pointer-events-none absolute h-[270px] transition-all ease-in-out"
           style={{
-            top: hang === "idle" ? "52%" : "44%",
-            left: hang === "idle" ? -55 : hang === "leave" ? "110%" : "50%",
+            top: hang === "idle" ? "52%" : stand ? "48%" : "44%",
+            left: hang === "idle" ? -55 : hang === "leave" ? "110%" : stand ? "28%" : "50%", // 거치대가 있으면 그 앞 왼쪽에 섬
             transform: `translateX(${hang === "idle" ? 0 : "-50%"}) ${hang === "walk" ? "rotate(-4deg)" : ""}`,
             transitionDuration: hang === "leave" ? "900ms" : "1100ms",
             animation: hang === "idle" ? "peek 2.4s ease-in-out infinite" : hang === "hang" ? "hop .5s ease-out 2" : undefined,
