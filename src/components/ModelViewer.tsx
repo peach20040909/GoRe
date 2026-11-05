@@ -2,6 +2,7 @@
 // 3D 매개체(유리병 등) 보기 + AR. 구글 model-viewer 사용.
 // AR: 안드로이드는 Scene Viewer/WebXR, 아이폰은 Quick Look(USDZ를 자동 생성). 데스크톱에선 AR 버튼이 숨겨짐.
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type Props = {
   src: string; // public/ 기준 .glb 경로
@@ -23,6 +24,7 @@ function hexToRgba(hex: string): [number, number, number, number] {
 }
 
 export function ModelViewer({ src, alt, tint, tintMaterials = [], arEnabled = true, className, style }: Props) {
+  const { t } = useLanguage();
   const ref = useRef<MVElement>(null);
   const [ready, setReady] = useState(false);
 
@@ -63,7 +65,7 @@ export function ModelViewer({ src, alt, tint, tintMaterials = [], arEnabled = tr
       style={{ display: "block", width: "100%", height: "min(100vw, 420px)", background: "linear-gradient(#e9f1ef, #d5e3df)", ...style }}
     >
       <button slot="ar-button" className="btn" style={{ position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)" }}>
-        AR로 이 자리에 놓아 보기
+        {t("AR로 이 자리에 놓아 보기")}
       </button>
     </model-viewer>
   );

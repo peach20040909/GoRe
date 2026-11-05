@@ -1,4 +1,5 @@
 // 브라우저에서 쓰는 공통 도구. 화면 디자인과 상관없이 모든 페이지가 공유.
+import { preferredLanguage } from "./language";
 
 export type LatLng = { lat: number; lng: number };
 export type PlaceLite = { slug: string; name_ko: string; name_en: string; lat: number | null; lng: number | null; radius_m: number };
@@ -19,9 +20,7 @@ export function getDeviceId(): string {
 
 /** 브라우저 언어 → 서비스 언어 코드 */
 export function browserLanguage(): string {
-  const lang = (typeof navigator !== "undefined" ? navigator.language : "ko").toLowerCase();
-  for (const code of ["ko", "en", "ja", "zh"]) if (lang.startsWith(code)) return code;
-  return "en";
+  return preferredLanguage();
 }
 
 /** 폰 사진은 Vercel 요청 한도(4.5MB)를 넘기 쉬움 → 긴 변 1280px JPEG data URL로 줄임 */

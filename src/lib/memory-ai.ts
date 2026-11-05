@@ -13,6 +13,8 @@ import {
   type Draft,
 } from "@/lib/prompts";
 import type { ZodType } from "zod";
+import { isLanguage } from "@/lib/language";
+import { translate } from "@/lib/translations";
 
 type Mocked<T> = T & { mocked: boolean };
 
@@ -46,6 +48,8 @@ export function identifyPlace(imageDataUrl: string, places: { slug: string; name
 
 /** B·C·D·E. 안전 필터 + 기억 이해 + 카드 디자인 값 + 열림 조건 제안 */
 export function draftMemory(input: { content: string; language: string; placeName: string; photoDataUrl?: string }) {
+  const language = isLanguage(input.language) ? input.language : "ko";
+  const t = (source: string) => translate(language, source);
   const nextYear = new Date(Date.now() + 365 * 864e5).toISOString().slice(0, 10);
   const fallback: Draft = {
     safe: true,
@@ -53,15 +57,15 @@ export function draftMemory(input: { content: string; language: string; placeNam
     recordType: "wish",
     fortune: { main: "reunion", sub: null },
     target: "self",
-    emotion: "설렘",
+    emotion: t("설렘"),
     timeHint: null,
-    title: "이 자리에 맡겨 둔 약속",
-    keywords: ["약속", "서울"],
+    title: t("이 자리에 맡겨 둔 약속"),
+    keywords: [t("약속"), t("서울")],
     card: { color: "#7FA7D9", shape: "single", pattern: "물결", glow: 0.6 },
-    engraving: { mine: "다시 만나요, 이 자리에서", ko: "다시 만나요, 이 자리에서" },
+    engraving: { mine: t("다시 만나요, 이 자리에서"), ko: "다시 만나요, 이 자리에서" },
     unlockOptions: [
-      { type: "revisit", unlockAt: null, note: "이 자리에 다시 오면 열려요" },
-      { type: "date", unlockAt: `${nextYear}T00:00:00+09:00`, note: "1년 뒤 오늘, 이 자리에서 열려요" },
+      { type: "revisit", unlockAt: null, note: t("이 자리에 다시 오면 열려요") },
+      { type: "date", unlockAt: `${nextYear}T00:00:00+09:00`, note: t("1년 뒤 오늘, 이 자리에서 열려요") },
     ],
   };
   const p = draftPrompt({ ...input, today: today(), hasPhoto: !!input.photoDataUrl });
@@ -92,6 +96,8 @@ export function judgeRevisit(input: {
   content: string;
   lockedAt: string;
 }) {
+  const language = isLanguage(input.language) ? input.language : "ko";
+  const t = (source: string) => translate(language, source);
   const images = [...(input.originalPhotoUrl ? [input.originalPhotoUrl] : []), input.newPhotoDataUrl];
   const p = revisitPrompt({ ...input, today: today(), hasOriginal: !!input.originalPhotoUrl });
   return ask(
@@ -100,8 +106,8 @@ export function judgeRevisit(input: {
     {
       sameSpot: true,
       confidence: 0.8,
-      reason: "(예시 응답) 같은 자리로 판정했어요",
-      reunionReport: "그날 이 자리에 남긴 기억을 다시 꺼냈어요. 그 사이 계절이 바뀌었네요. 지금의 고리도 하나 더 걸어 볼까요?",
+      reason: t("(예시 응답) 같은 자리로 판정했어요"),
+      reunionReport: t("그날 이 자리에 남긴 기억을 다시 꺼냈어요. 그 사이 계절이 바뀌었네요. 지금의 고리도 하나 더 걸어 볼까요?"),
     },
     images
   );

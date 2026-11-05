@@ -3,6 +3,7 @@
 // 필요: NEXT_PUBLIC_NAVER_MAP_CLIENT_ID, 네이버 콘솔 '웹 서비스 URL'에 접속 주소 등록 (localhost:3000, go-re.vercel.app)
 import { useEffect, useRef, useState } from "react";
 import { characterFor } from "@/lib/media";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export type MapPlace = { slug: string; name_ko: string; lat: number | null; lng: number | null; memoryCount?: number };
 
@@ -39,13 +40,13 @@ function loadSdk(): Promise<NaverMaps> {
 }
 
 // DS / Character map marker (56×72 핀 + 44px 캐릭터) + DS / Map place label
-const pin = (name: string, img: string) =>
+const pin = (name: string, img: string, labelAbove = false) =>
   `<div style="transform:translate(-50%,-72px);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer">
     <div style="position:relative;width:56px;height:72px">
       <img src="/ds/pin.svg" width="56" height="72" style="position:absolute;inset:0" alt="">
       <div style="position:absolute;left:6px;top:5px;width:44px;height:44px;border-radius:999px;overflow:hidden;background:#f5f0e9;display:flex;justify-content:center">
         <img src="${img}" style="height:46px;margin-top:3px" alt=""></div></div>
-    <div style="background:#fff;border-radius:8px;padding:6px 12px;font:500 14px/20px Pretendard,system-ui;color:#171717;white-space:nowrap;box-shadow:0 4px 8px rgba(0,0,0,.08)">${name}</div></div>`;
+    <div style="${labelAbove ? "position:absolute;bottom:calc(100% + 6px);" : ""}background:#fff;border-radius:8px;padding:5px 9px;font:500 12px/17px Pretendard,system-ui;color:#171717;white-space:nowrap;box-shadow:0 4px 8px rgba(0,0,0,.08)">${name}</div></div>`;
 
 type Props = {
   places: MapPlace[];
@@ -59,6 +60,7 @@ type Props = {
 };
 
 export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, className, height = "min(70vh, 480px)", square, compact = false }: Props) {
+  const { t } = useLanguage();
   const el = useRef<HTMLDivElement>(null);
   const fit = useRef<((bottom: number) => void) | null>(null);
   const inset = useRef(bottomInset);
@@ -93,8 +95,8 @@ export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, classN
           const m = new maps.Marker({
             position: new maps.LatLng(p.lat!, p.lng!),
             map,
-            title: p.name_ko,
-            icon: { content: pin(p.name_ko, characterFor(p.slug)) },
+            title: t(p.name_ko),
+            icon: { content: pin(t(p.name_ko), characterFor(p.slug), p.slug === "hongje-falls") },
           });
           maps.Event.addListener(m, "click", () => {
             markerAt = Date.now();
@@ -104,7 +106,7 @@ export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, classN
       })
       .catch((e: Error) => setError(e.message));
     return () => { disposed = true; fit.current = null; map?.destroy?.(); };
-  }, [places, onSelect, compact]);
+  }, [places, onSelect, compact, t]);
 
   useEffect(() => fit.current?.(bottomInset), [bottomInset]);
 
@@ -113,7 +115,7 @@ export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, classN
       <div ref={el} style={{ position: "absolute", inset: 0 }} />
       {error && (
         <p style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, textAlign: "center", color: "#6b6f76", fontSize: 14 }}>
-          {error}
+          {t(error)}
         </p>
       )}
     </div>

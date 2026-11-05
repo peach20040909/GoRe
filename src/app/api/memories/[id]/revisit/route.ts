@@ -1,8 +1,10 @@
 // 꺼내기: 다시 방문 → 같은 자리 판정 → 열림 + 재회 리포트
 import { NextResponse } from "next/server";
-import { db, getUserByDevice, uploadPhoto } from "@/lib/db";
+import { db, getUserByDevice, uploadPhoto, normalizeLanguage } from "@/lib/db";
 import { judgeRevisit } from "@/lib/memory-ai";
 import { distanceM } from "@/lib/client";
+import { LOCALES } from "@/lib/language";
+import { translate } from "@/lib/translations";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -27,15 +29,18 @@ const SAME_SPOT_MIN = 0.5; // 판정 기준을 너그럽게 (기획서 13. 리�
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { deviceId, photoDataUrl, lat, lng, demo } = (await req.json()) as {
+    const { deviceId, photoDataUrl, lat, lng, demo, language } = (await req.json()) as {
       deviceId?: string;
       photoDataUrl?: string;
       lat?: number;
       lng?: number;
       demo?: boolean;
+      language?: string;
     };
+    const selectedLanguage = normalizeLanguage(language);
+    const t = (source: string, values?: Record<string, string | number>) => translate(selectedLanguage, source, values);
     if (!deviceId || !photoDataUrl?.startsWith("data:image/")) {
-      return NextResponse.json({ error: "기기 정보와 지금 찍은 사진이 필요해요" }, { status: 400 });
+      return NextResponse.json({ error: t("기기 정보와 지금 찍은 사진이 필요해요") }, { status: 400 });
     }
 
     const [user, rows] = await Promise.all([
@@ -43,9 +48,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       db<MemoryRow[]>(`memories?id=eq.${encodeURIComponent(id)}&select=*,places(name_ko,description,lat,lng,radius_m)`),
     ]);
     const memory = rows[0];
-    if (!memory) return NextResponse.json({ error: "없는 기억이에요" }, { status: 404 });
+    if (!memory) return NextResponse.json({ error: t("없는 기억이에요") }, { status: 404 });
     if (!user || memory.user_id !== user.id) {
-      return NextResponse.json({ error: "내가 남긴 기억만 열 수 있어요" }, { status: 403 });
+      return NextResponse.json({ error: t("내가 남긴 기억만 열 수 있어요") }, { status: 403 });
     }
     if (memory.status === "opened") {
       return NextResponse.json({ opened: true, alreadyOpened: true, memory });
@@ -59,7 +64,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         return NextResponse.json({
           opened: false,
           sameSpot: null,
-          lockedReason: `${at.toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul" })}부터 열려요`,
+          lockedReason: t("{date}부터 열려요", { date: at.toLocaleDateString(LOCALES[selectedLanguage], { timeZone: "Asia/Seoul" }) }),
         });
       }
     }
@@ -68,7 +73,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const pl = memory.places;
     if (!demo && pl.lat != null && pl.lng != null) {
       if (!isCoord(lat, 90) || !isCoord(lng, 180)) {
-        return NextResponse.json({ opened: false, sameSpot: null, lockedReason: "위치 권한을 허용해야 기억을 열 수 있어요" });
+        return NextResponse.json({ opened: false, sameSpot: null, lockedReason: t("위치 권한을 허용해야 기억을 열 수 있어요") });
       }
       const distance = Math.round(distanceM({ lat, lng }, { lat: pl.lat, lng: pl.lng }));
       if (distance > pl.radius_m) {
@@ -76,7 +81,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           opened: false,
           sameSpot: null,
           distance,
-          lockedReason: `${pl.name_ko}에서 ${distance}m 떨어져 있어요. ${pl.radius_m}m 안으로 와서 다시 찍어 주세요`,
+          lockedReason: t("{place}에서 {distance}m 떨어져 있어요. {radius}m 안으로 와서 다시 찍어 주세요", {place: t(pl.name_ko), distance, radius: pl.radius_m}),
         });
       }
     }
@@ -87,7 +92,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         originalPhotoUrl: memory.photo_url,
         placeName: memory.places.name_ko,
         placeDescription: memory.places.description,
-        language: memory.language,
+        language: normalizeLanguage(language ?? memory.language),
         content: memory.content,
         lockedAt: memory.created_at.slice(0, 10),
       }),
@@ -116,7 +121,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         sameSpot: false,
         confidence: judge.confidence,
         reason: judge.reason,
-        lockedReason: "처음 맡긴 그 자리에서 다시 찍어 주세요",
+        lockedReason: t("처음 맡긴 그 자리에서 다시 찍어 주세요"),
         mocked: judge.mocked,
       });
     }

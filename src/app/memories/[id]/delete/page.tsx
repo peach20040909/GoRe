@@ -1,5 +1,6 @@
 "use client";
 // 고리 삭제 플로우 (Figma 삭제 03~09): 장소 확인(카메라·GPS) → 자물쇠 풀기(위치 필수 + 동행 조건이면 동행자 확인) → 삭제 완료
+import { useLanguage } from "@/components/LanguageProvider";
 import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -26,6 +27,7 @@ function CheckRow({ state, title, desc }: { state: Check; title: string; desc: s
 }
 
 export default function DeleteGori({ params }: { params: Promise<{ id: string }> }) {
+  const { t } = useLanguage();
   const { id } = use(params);
   const router = useRouter();
   const cam = useRef<CameraHandle>(null);
@@ -88,9 +90,9 @@ export default function DeleteGori({ params }: { params: Promise<{ id: string }>
         setLoc("fail");
         setPopup(true);
       }
-      setError(d.lockedReason ?? d.error ?? "고리를 풀지 못했어요");
+      setError(d.lockedReason ?? d.error ?? t("고리를 풀지 못했어요"));
     } catch {
-      setError("고리를 풀지 못했어요. 잠시 후 다시 시도해 주세요");
+      setError(t("고리를 풀지 못했어요. 잠시 후 다시 시도해 주세요"));
     } finally {
       setBusy(false);
     }
@@ -100,21 +102,21 @@ export default function DeleteGori({ params }: { params: Promise<{ id: string }>
   if (item === null)
     return (
       <div className="p-10 text-center">
-        <p>고리를 찾을 수 없어요.</p>
-        <Link href="/memories" className="btn mt-4 w-full">추억으로</Link>
+        <p>{t("고리를 찾을 수 없어요.")}</p>
+        <Link href="/memories" className="btn mt-4 w-full">{t("추억으로")}</Link>
       </div>
     );
 
   if (step === "done")
     return (
       <div className="flex min-h-dvh flex-col">
-        <Header title="고리 삭제 완료" back="/memories" />
+        <Header title={t("고리 삭제 완료")} back="/memories" />
         <div className="flex flex-1 flex-col items-center justify-center px-6 pb-24 text-center">
           <img src="/ds/icon-unlock.svg" alt="" width={64} height={64} />
-          <p className="t-title mt-8">고리를 풀었어요</p>
-          <p className="t-label mt-3 text-muted">이 고리에 담긴 편지와 사진이 삭제됐어요.</p>
+          <p className="t-title mt-8">{t("고리를 풀었어요")}</p>
+          <p className="t-label mt-3 text-muted">{t("이 고리에 담긴 편지와 사진이 삭제됐어요.")}</p>
         </div>
-        <div className="px-6 pb-8"><Link href="/memories" className="btn w-full">추억으로 돌아가기</Link></div>
+        <div className="px-6 pb-8"><Link href="/memories" className="btn w-full">{t("추억으로 돌아가기")}</Link></div>
       </div>
     );
 
@@ -122,15 +124,15 @@ export default function DeleteGori({ params }: { params: Promise<{ id: string }>
     return (
       <div className="fixed inset-0 z-40 mx-auto flex max-w-[430px] flex-col bg-surface">
         <CameraFeed ref={cam} />
-        <div className="relative"><Header title="장소 확인" back="/memories" /></div>
+        <div className="relative"><Header title={t("장소 확인")} back="/memories" /></div>
         <div className="relative px-6 pt-2">
-          <p className="t-heading">고리를 남긴 장소를 비춰주세요</p>
-          <p className="t-label mt-3 text-muted">{item.placeName}</p>
+          <p className="t-heading">{t("고리를 남긴 장소를 비춰주세요")}</p>
+          <p className="t-label mt-3 text-muted">{t(item.placeName ?? "")}</p>
         </div>
         <img src="/ds/scan-frame.svg" alt="" width={278} height={220} className="relative mx-auto mt-16" />
         <div className="relative mt-auto px-6 pb-8">
-          <p className="t-caption mb-12 text-center text-muted">주변 풍경과 위치 정보로 장소를 확인해요.</p>
-          <button className="btn w-full" onClick={confirmPlace}>이 장소 확인하기</button>
+          <p className="t-caption mb-12 text-center text-muted">{t("주변 풍경과 위치 정보로 장소를 확인해요.")}</p>
+          <button className="btn w-full" onClick={confirmPlace}>{t("이 장소 확인하기")}</button>
         </div>
       </div>
     );
@@ -138,45 +140,45 @@ export default function DeleteGori({ params }: { params: Promise<{ id: string }>
   const ready = loc === "ok" && (!together || mate === "ok");
   return (
     <div className="flex min-h-dvh flex-col">
-      <Header title="자물쇠 풀기" back={() => setStep("scan")} />
+      <Header title={t("자물쇠 풀기")} back={() => setStep("scan")} />
       <div className="px-6">
-        <p className="t-title mt-4">{together && mate !== "ok" && loc === "ok" ? "함께 왔는지 확인하고 있어요" : "잠금 조건을 확인했어요"}</p>
+        <p className="t-title mt-4">{together && mate !== "ok" && loc === "ok" ? t("함께 왔는지 확인하고 있어요") : t("잠금 조건을 확인했어요")}</p>
         <div className="mt-8 flex items-center gap-3">
           <Character slug={item.placeSlug} size={48} />
           <div className="min-w-0">
-            <p className="t-strong truncate">{item.title ?? "기억"}</p>
-            <p className="t-caption text-muted">{item.placeName}</p>
+            <p className="t-strong truncate">{item.title ?? t("기억")}</p>
+            <p className="t-caption text-muted">{t(item.placeName ?? "")}</p>
           </div>
         </div>
         <div className="mt-12 flex flex-col gap-3">
           <CheckRow
             state={loc}
-            title={loc === "ok" ? "위치 확인 완료" : loc === "fail" ? "위치 확인 필요" : "위치 확인 중"}
-            desc={loc === "ok" ? "고리를 남긴 장소에 도착했어요." : loc === "fail" ? "고리를 남긴 장소에서 다시 확인해주세요." : "지금 위치를 확인하고 있어요."}
+            title={loc === "ok" ? t("위치 확인 완료") : loc === "fail" ? t("위치 확인 필요") : t("위치 확인 중")}
+            desc={loc === "ok" ? t("고리를 남긴 장소에 도착했어요.") : loc === "fail" ? t("고리를 남긴 장소에서 다시 확인해주세요.") : t("지금 위치를 확인하고 있어요.")}
           />
           {together && (
             <CheckRow
               state={mate}
-              title={mate === "ok" ? "동행자 확인 완료" : "동행자 확인 중"}
-              desc={mate === "ok" ? "Bluetooth로 함께 온 사람을 확인했어요." : "Bluetooth로 함께 등록한 기기를 찾고 있어요."}
+              title={mate === "ok" ? t("동행자 확인 완료") : t("동행자 확인 중")}
+              desc={mate === "ok" ? t("Bluetooth로 함께 온 사람을 확인했어요.") : t("Bluetooth로 함께 등록한 기기를 찾고 있어요.")}
             />
           )}
         </div>
-        {error && !popup && <p role="alert" className="t-label mt-4 rounded-xl bg-[#fbeaea] p-3 text-[var(--error)]">{error}</p>}
+        {error && !popup && <p role="alert" className="t-label mt-4 rounded-xl bg-[#fbeaea] p-3 text-[var(--error)]">{t(error)}</p>}
       </div>
       <div className="mt-auto px-6 pb-8">
-        <p className="t-caption mb-10 text-center text-muted">고리를 풀면 편지와 사진이 삭제돼요.</p>
+        <p className="t-caption mb-10 text-center text-muted">{t("고리를 풀면 편지와 사진이 삭제돼요.")}</p>
         <button className={`btn w-full ${ready ? "" : "!bg-subtle !text-[#949494] !opacity-100"}`} disabled={!ready || busy} onClick={unlock}>
-          {busy ? "푸는 중…" : "자물쇠 풀기"}
+          {busy ? t("푸는 중…") : t("자물쇠 풀기")}
         </button>
       </div>
 
       {popup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-6" role="dialog" aria-modal="true">
           <div className="w-full max-w-[342px] rounded-3xl bg-surface p-6">
-            <p className="t-heading">위치를 확인할 수 없어요</p>
-            <p className="t-label mt-4 text-muted">{error ?? "고리를 남긴 장소에 도착했는지 확인하고, 위치 권한을 허용한 뒤 다시 시도해주세요."}</p>
-            <button className="btn mt-8 w-full" onClick={() => { setError(null); checkLocation(); }}>위치 다시 확인</button>
+            <p className="t-heading">{t("위치를 확인할 수 없어요")}</p>
+            <p className="t-label mt-4 text-muted">{t(error ?? "고리를 남긴 장소에 도착했는지 확인하고, 위치 권한을 허용한 뒤 다시 시도해주세요.")}</p>
+            <button className="btn mt-8 w-full" onClick={() => { setError(null); checkLocation(); }}>{t("위치 다시 확인")}</button>
           </div>
         </div>
       )}

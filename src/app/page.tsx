@@ -1,6 +1,7 @@
 "use client";
 // 홈 (Figma: 홈 · 지도 기본 / 주변 장소 목록 / 핀 선택 · 장소 정보)
 // 지도 + 아래 시트. 시트는 접힘 → 주변 장소 목록 → 핀/행을 누르면 장소 정보 → "여기에 고리 걸기"로 고리 플로우
+import { useLanguage } from "@/components/LanguageProvider";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { NaverMap, type MapPlace } from "@/components/NaverMap";
@@ -13,11 +14,13 @@ const HOME: Record<string, { category: string; address: string }> = {
   gyeongbokgung: { category: "궁궐 · 한국 전통 장소", address: "서울 종로구 사직로 161" },
   dongnimmun: { category: "역사 유적 · 독립공원", address: "서울 서대문구 통일로 251" },
   "demo-hall": { category: "대학 캠퍼스", address: "서울 서대문구 거북골로 34" },
+  "hongje-falls": { category: "자연·경관", address: "서울 서대문구 연희동 170-181" },
 };
 const MAP_H = "calc(100dvh - 56px - 76px - 90px)"; // 접힌 시트(90px) 위에서 끝나야 네이버 로고가 안 가려짐
 
 /* eslint-disable @next/next/no-img-element */
 export default function Home() {
+  const { t } = useLanguage();
   const [places, setPlaces] = useState<MapPlace[] | null>(null);
   const [sheet, setSheet] = useState<"peek" | "list">("peek");
   const [selected, setSelected] = useState<MapPlace | null>(null);
@@ -40,18 +43,18 @@ export default function Home() {
 
   return (
     <div className="relative">
-      {exploring ? <Header title="홈" back={() => { setExploring(false); setSelected(null); setSheet("peek"); }} /> : (
+      {exploring ? <Header title={t("홈")} back={() => { setExploring(false); setSelected(null); setSheet("peek"); }} /> : (
         <div className="home-hero pb-8">
-          <Header title="홈" inverse />
+          <Header title={t("홈")} inverse />
           <div className="relative z-10 px-6 pb-2 pt-3">
-            <h1 className="t-title relative z-10 w-[62%]">고리를 남기는<br />가장 가까운 여행</h1>
-            <p className="t-caption relative z-10 mt-2 text-white/90">오늘도 우리만의 장소로</p>
-            <button className="relative z-10 mt-6 h-10 rounded-xl bg-white px-4 text-base font-medium text-accent" onClick={() => { setExploring(true); setSheet("list"); }}>주변 둘러보기</button>
+            <h1 className="t-title relative z-10 w-[62%]">{t("고리를 남기는")}<br />{t("가장 가까운 여행")}</h1>
+            <p className="t-caption relative z-10 mt-2 text-white/90">{t("오늘도 우리만의 장소로")}</p>
+            <button className="relative z-10 mt-6 h-10 rounded-xl bg-white px-4 text-base font-medium text-accent" onClick={() => { setExploring(true); setSheet("list"); }}>{t("주변 둘러보기")}</button>
           </div>
           <img src="/theme/pink-friend.png" alt="" className="hero-friend" />
         </div>
       )}
-      {!exploring && <h2 className="t-sub px-6 pb-3 pt-6">우리 동네, 새로운 기억</h2>}
+      {!exploring && <h2 className="t-sub px-6 pb-3 pt-6">{t("우리 동네, 새로운 기억")}</h2>}
       {/* 지도는 헤더 아래 꽉 차게, 제목은 지도 위에 띄움 (Figma 홈 · 지도 기본) */}
       <div className={`relative isolate ${exploring ? "" : "mx-6 overflow-hidden rounded-3xl"}`}>
         {places ? (
@@ -69,14 +72,10 @@ export default function Home() {
             square
           />
         ) :<div className="skeleton !rounded-none" style={{ height: exploring ? MAP_H : "max(246px, calc(100dvh - 480px))" }} />}
-        {!exploring && <button type="button" aria-label="지도에서 주변 장소 보기" className="absolute inset-0 z-10 cursor-pointer rounded-3xl" onClick={() => { setExploring(true); setSheet("list"); }} />}
-        {exploring && <h2 className="t-title pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 via-white/80 to-transparent px-6 pb-10 pt-4">
-          오늘의 고리를
-          <br />
-          어디에 남길까요?
-        </h2>}
+        {!exploring && <button type="button" aria-label={t("지도에서 주변 장소 보기")} className="absolute inset-0 z-10 cursor-pointer rounded-3xl" onClick={() => { setExploring(true); setSheet("list"); }} />}
+        {exploring && <h2 className="t-title pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 via-white/80 to-transparent px-6 pb-10 pt-4">{t("오늘의 고리를")}<br />{t("어디에 남길까요?")}</h2>}
       </div>
-      {!exploring && <button className="t-label mx-6 mb-4 mt-4 flex min-h-11 items-center gap-1" onClick={() => { setExploring(true); setSheet("list"); }}>가까운 장소 더 보기 <span aria-hidden>›</span></button>}
+      {!exploring && <button className="t-label mx-6 mb-4 mt-4 flex min-h-11 items-center gap-1" onClick={() => { setExploring(true); setSheet("list"); }}>{t("가까운 장소 더 보기")}<span aria-hidden>›</span></button>}
 
       {/* 바텀 시트 (DS / Nearby places sheet · DS / Place detail sheet). 손잡이를 누르거나 위로 밀면 올라옴 */}
       {exploring && <section
@@ -90,7 +89,7 @@ export default function Home() {
         }}
       >
         <button
-          aria-label={open === "peek" ? "주변 장소 펼치기" : "접기"}
+          aria-label={open === "peek" ? t("주변 장소 펼치기") : t("접기")}
           onClick={() => (selected ? setSelected(null) : setSheet(sheet === "peek" ? "list" : "peek"))}
           className="flex h-[46px] w-full justify-center pt-3"
         >
@@ -99,42 +98,42 @@ export default function Home() {
 
         {open !== "detail" && (
           <div className="px-6">
-            <p className="t-heading">주변 장소</p>
-            <p className="t-caption mt-1 text-muted">지금 고리를 남길 수 있는 곳</p>
+            <p className="t-heading">{t("주변 장소")}</p>
+            <p className="t-caption mt-1 text-muted">{t("지금 고리를 남길 수 있는 곳")}</p>
             <ul className="mt-3 flex h-[280px] flex-col gap-2 overflow-y-auto pb-4">
               {(places ?? []).map((p) => (
                 <li key={p.slug}>
                   <button onClick={() => select(p.slug)} className="flex h-[92px] w-full items-center gap-3 rounded-xl border border-line p-3 text-left">
                     <Character slug={p.slug} size={64} />
                     <span className="flex min-w-0 flex-col gap-1">
-                      <span className="t-strong">{p.name_ko}</span>
-                      <span className="t-caption truncate text-muted">{HOME[p.slug].category} · {HOME[p.slug].address}</span>
+                      <span className="t-strong">{t(p.name_ko)}</span>
+                      <span className="t-caption truncate text-muted">{t(HOME[p.slug].category)} · {t(HOME[p.slug].address)}</span>
                     </span>
                   </button>
                 </li>
               ))}
-              {places?.length === 0 && <li className="t-label text-muted">장소를 불러오지 못했어요. 잠시 후 다시 열어 주세요.</li>}
+              {places?.length === 0 && <li className="t-label text-muted">{t("장소를 불러오지 못했어요. 잠시 후 다시 열어 주세요.")}</li>}
             </ul>
           </div>
         )}
 
         {selected && g && (
           <div className="relative px-6 pt-2">
-            <button onClick={() => setSelected(null)} aria-label="닫기" className="absolute -top-6 right-3 flex size-11 items-center justify-center text-2xl font-bold">×</button>
+            <button onClick={() => setSelected(null)} aria-label={t("닫기")} className="absolute -top-6 right-3 flex size-11 items-center justify-center text-2xl font-bold">×</button>
             <div className="flex items-center gap-3">
-              <p className="t-title">{selected.name_ko}</p>
-              <p className="t-caption text-muted">{HOME[selected.slug]?.category}</p>
+              <p className="t-title">{t(selected.name_ko)}</p>
+              <p className="t-caption text-muted">{t(HOME[selected.slug]?.category ?? "")}</p>
             </div>
             <div className="mt-3 flex gap-2">
-              <span className="t-caption w-7 shrink-0 text-muted">주소</span>
-              <span className="t-label">{HOME[selected.slug]?.address}</span>
+              <span className="t-caption shrink-0 text-muted">{t("주소")}</span>
+              <span className="t-label">{t(HOME[selected.slug]?.address ?? "")}</span>
             </div>
-            <p className="t-caption mt-3 text-muted">이곳의 고리 · {mediaFor(selected.slug).label} · 남겨진 기억 {selected.memoryCount ?? 0}개</p>
+            <p className="t-caption mt-3 text-muted">{t("이곳의 고리 ·")}{" "}{t(mediaFor(selected.slug).label)}{" "}{t("· 남겨진 기억")}{" "}{selected.memoryCount ?? 0}{t("개")}</p>
             <div className="mt-2 flex gap-2.5">
-              <img src={g.sealed} alt="봉인된 고리" className="h-[152px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
-              <img src={g.opened} alt="열린 고리" className="h-[152px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
+              <img src={g.sealed} alt={t("봉인된 고리")} className="h-[152px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
+              <img src={g.opened} alt={t("열린 고리")} className="h-[152px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
             </div>
-            <Link href={`/gori/${selected.slug}`} className="btn mt-6 w-full">여기에 고리 걸기</Link>
+            <Link href={`/gori/${selected.slug}`} className="btn mt-6 w-full">{t("여기에 고리 걸기")}</Link>
           </div>
         )}
       </section>}

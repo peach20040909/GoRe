@@ -4,8 +4,10 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getPosition, placesNearby, type PlaceLite } from "@/lib/client";
 import { isDemo } from "@/lib/session";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function GoriTab() {
+  const { t } = useLanguage();
   const router = useRouter();
   useEffect(() => {
     if (isDemo()) return router.replace("/gori/demo-hall");
@@ -16,5 +18,5 @@ export default function GoriTab() {
       })
       .catch(() => router.replace("/"));
   }, [router]);
-  return <p className="t-label p-10 text-center text-muted">가까운 장소를 찾고 있어요…</p>;
+  return <p className="t-label p-10 text-center text-muted">{t("가까운 장소를 찾고 있어요…")}</p>;
 }
