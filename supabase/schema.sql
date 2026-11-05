@@ -5,7 +5,9 @@ create extension if not exists pgcrypto;
 
 create table users (
   id uuid primary key default gen_random_uuid(),
-  device_id text unique not null,           -- 로그인 없이 기기 식별
+  device_id text unique not null,           -- 기기 식별. 가입한 사용자는 서버가 만든 로그인 토큰(uuid)이 들어감
+  email text unique,                        -- 가입한 사용자만 (소문자로 저장)
+  password_hash text,                       -- salt(hex):scrypt(hex). 응답·로그에 절대 노출 금지
   nickname text,
   language text not null default 'ko',
   created_at timestamptz not null default now()
