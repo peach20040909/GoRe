@@ -20,7 +20,7 @@ import { makePublicVersion } from "@/lib/public-memory";
 
 export const runtime = "nodejs";
 
-const MEDIUMS = ["lock", "letter", "capsule"] as const;
+const MEDIUMS = ["lock", "paper", "beacon", "bottle"] as const; // MemoryCard·media.ts 와 같은 목록
 const VISIBILITIES = ["private", "public_anonymous"] as const;
 const UNLOCK_TYPES = ["date", "season", "revisit", "together"] as const;
 const RECORD_TYPES = ["wish", "retro", "letter"] as const;

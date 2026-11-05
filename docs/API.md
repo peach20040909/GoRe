@@ -141,7 +141,7 @@ draft → DB 컬럼 매핑 (`supabase/migrations/002_memory_card.sql` 실행 후
    - 이름·전화번호·학교 등 식별 정보 제거, 마음만 남긴 한 줄 (예: "엄마 ○○○ 수술 잘 되게" → "가족의 회복을 비는 기억")
    - 번역: `{ "ko": "...", "en": "...", "ja": "...", "zh": "..." }`
    - **브라우저가 보낸 익명화 문장을 믿지 말 것** (원문이 공개될 수 있음)
-- `medium`: `lock`(자물쇠) / `letter`(편지) / `capsule`(상자)
+- `medium`: `lock`(자물쇠) / `paper`(원고지) / `beacon`(봉화) / `bottle`(유리병 편지) — 장소별 기본값은 `src/lib/media.ts`
 
 ## 5. `GET /api/memories?deviceId=uuid` — 내 타임캡슐 목록
 
