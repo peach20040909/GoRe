@@ -22,6 +22,8 @@ const rows = `
 이메일 또는 비밀번호를 확인해 주세요|Check your email or password.|メールアドレスとパスワードを確認してください。|请检查邮箱或密码。
 가입하지 못했어요. 다시 시도해 주세요.|Couldn't create the account. Please try again.|登録できませんでした。もう一度お試しください。|无法注册，请重试。
 서버 오류가 발생했어요. 잠시 후 다시 시도해 주세요.|A server error occurred. Please try again shortly.|サーバーエラーです。しばらくしてからお試しください。|服务器发生错误，请稍后重试。
+AR로 거치대 놓아 보기|Place the stand in AR|ARで掛け台を置く|通过AR放置挂架
+고리 거치대|Gori stand|ゴリの掛け台|Gori挂架
 AR로 이 자리에 놓아 보기|Place here in AR|ARでここに置く|通过AR放在这里
 구 신촌역사에서 출발하는 옛 기차표를 본뜬 고리예요. 신촌에서 찍은 사진과 그날의 이야기를 한 장의 왕복표에 담아보세요.|Inspired by an old train ticket from Sinchon Station. Keep your photo and story in a return ticket.|旧新村駅発の切符を模したゴリです。写真と物語を一枚の往復切符に残しましょう。|以旧新村站的车票为灵感，将照片与故事装进一张往返票。
 박물관 중앙홀의 아크로칸토사우루스 골격을 담은 발굴함이에요. 뚜껑을 열면 공룡 뼈와 함께 그날의 기록이 드러나요.|A discovery box inspired by the museum's Acrocanthosaurus skeleton. Lift the lid to reveal your memory.|博物館のアクロカントサウルス骨格を収めた発掘箱です。ふたを開くと思い出が現れます。|以博物馆中的高棘龙骨架为灵感，打开盒盖便能看到那天的记录。
