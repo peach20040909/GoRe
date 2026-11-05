@@ -135,7 +135,8 @@ export default function GoriFlow({ params }: { params: Promise<{ slug: string }>
         <Header title="고리" />
         <div className="relative mx-0 h-[calc(100dvh-56px-92px-76px)] min-h-[360px]">
           <CameraFeed ref={cam} />
-          <div className="relative px-6 pt-4">
+          {/* 카메라 화면 위 안내 문구: 반투명 흐림 판 위에 띄움 */}
+          <div className="relative bg-white/70 px-6 pb-4 pt-4 backdrop-blur-md">
             <p className="t-heading">이 장소에 고리를 걸어요</p>
             <p className="t-label mt-2 text-muted">카메라로 지금 머무는 장소를 비춰주세요.</p>
           </div>

@@ -23,7 +23,7 @@ export const BADGES: Badge[] = [
     description: "돌을 하나하나 쌓아 올린 옛길의 시간을 담은 배지예요." },
   { id: "stage", name: "무대의 울림", category: "문화·예술공간", motif: "명동예술극장", places: ["myeongdong-theater", "sori-museum"],
     description: "막이 오르던 순간의 울림을 담은 배지예요." },
-  { id: "book", name: "책 속의 산책", category: "문화·예술공간", motif: "명지대학교 · 핀슨관", places: ["demo-hall", "pinson-hall"],
+  { id: "book", name: "책 속의 산책", category: "문화·예술공간", motif: "명지대학교", places: ["demo-hall", "pinson-hall"],
     description: "책장 사이를 걷던 캠퍼스의 하루를 담은 배지예요." },
   { id: "craft", name: "공예의 손길", category: "문화·예술공간", motif: "서울공예박물관", places: ["craft-museum", "sdm-natural-history", "money-museum"],
     description: "손으로 빚고 엮은 공예의 결을 담은 배지예요." },

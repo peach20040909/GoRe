@@ -9,7 +9,7 @@ export type MapPlace = { slug: string; name_ko: string; lat: number | null; lng:
 // 네이버 지도 SDK에서 쓰는 부분만 타입으로
 type LatLng = unknown;
 type NaverMaps = {
-  Map: new (el: HTMLElement, opts: Record<string, unknown>) => { fitBounds(b: unknown, m?: unknown): void };
+  Map: new (el: HTMLElement, opts: Record<string, unknown>) => { fitBounds(b: unknown, m?: unknown): void; destroy?(): void };
   LatLng: new (lat: number, lng: number) => LatLng;
   LatLngBounds: new (a: LatLng, b: LatLng) => { extend(p: LatLng): void };
   Marker: new (opts: Record<string, unknown>) => unknown;
@@ -47,8 +47,23 @@ const pin = (name: string, img: string) =>
         <img src="${img}" style="height:46px;margin-top:3px" alt=""></div></div>
     <div style="background:#fff;border-radius:8px;padding:6px 12px;font:500 14px/20px Pretendard,system-ui;color:#171717;white-space:nowrap;box-shadow:0 4px 8px rgba(0,0,0,.08)">${name}</div></div>`;
 
-export function NaverMap({ places, onSelect, className, height = "min(70vh, 480px)", square }: { places: MapPlace[]; onSelect?: (slug: string) => void; className?: string; height?: string; square?: boolean }) {
+type Props = {
+  places: MapPlace[];
+  onSelect?: (slug: string) => void;
+  onMapClick?: () => void; // 핀이 아닌 빈 지도를 눌렀을 때 (홈: 바텀시트 내리기)
+  bottomInset?: number; // 지도 아래를 덮는 시트 높이. 바뀌면 핀이 보이는 영역에 오도록 다시 맞춤
+  className?: string;
+  height?: string;
+  square?: boolean;
+};
+
+export function NaverMap({ places, onSelect, onMapClick, bottomInset = 0, className, height = "min(70vh, 480px)", square }: Props) {
   const el = useRef<HTMLDivElement>(null);
+  const fit = useRef<((bottom: number) => void) | null>(null);
+  const inset = useRef(bottomInset);
+  inset.current = bottomInset;
+  const mapClick = useRef(onMapClick);
+  mapClick.current = onMapClick;
   const [error, setError] = useState<string | null>(CLIENT_ID ? null : "지도 키(NEXT_PUBLIC_NAVER_MAP_CLIENT_ID)가 없어요");
 
   useEffect(() => {
@@ -62,9 +77,14 @@ export function NaverMap({ places, onSelect, className, height = "min(70vh, 480p
         if (pts.length > 1) {
           const b = new maps.LatLngBounds(center, center);
           pts.forEach((p) => b.extend(new maps.LatLng(p.lat!, p.lng!)));
-          // 핀 이름표가 마커 위 가운데에 붙어서, 좌우 여백이 좁으면 양 끝 이름표가 잘림
-          map.fitBounds(b, { top: 170, right: 70, bottom: 110, left: 70 });
+          // 위: 지도 위에 띄운 제목 + 핀 높이 / 좌우: 이름표가 안 잘리게 / 아래: 시트에 가리지 않게
+          fit.current = (bottom) => map.fitBounds(b, { top: 150, right: 70, bottom: 30 + bottom, left: 70 });
+          fit.current(inset.current);
         }
+        let markerAt = 0; // 핀을 누를 때 지도 클릭이 같이 오면 무시
+        maps.Event.addListener(map, "click", () => {
+          if (Date.now() - markerAt > 300) mapClick.current?.();
+        });
         pts.forEach((p) => {
           const m = new maps.Marker({
             position: new maps.LatLng(p.lat!, p.lng!),
@@ -72,11 +92,16 @@ export function NaverMap({ places, onSelect, className, height = "min(70vh, 480p
             title: p.name_ko,
             icon: { content: pin(p.name_ko, characterFor(p.slug)) },
           });
-          if (onSelect) maps.Event.addListener(m, "click", () => onSelect(p.slug));
+          maps.Event.addListener(m, "click", () => {
+            markerAt = Date.now();
+            onSelect?.(p.slug);
+          });
         });
       })
       .catch((e: Error) => setError(e.message));
   }, [places, onSelect]);
+
+  useEffect(() => fit.current?.(bottomInset), [bottomInset]);
 
   return (
     <div className={className} style={{ position: "relative", width: "100%", height, borderRadius: square ? 0 : 16, overflow: "hidden", background: "#f5f5f5" }}>

@@ -39,7 +39,19 @@ export default function Home() {
       <Header title="홈" />
       {/* 지도는 헤더 아래 꽉 차게, 제목은 지도 위에 띄움 (Figma 홈 · 지도 기본) */}
       <div className="relative isolate">
-        {places ? <NaverMap places={places} onSelect={select} height={MAP_H} square /> : <div className="skeleton !rounded-none" style={{ height: MAP_H }} />}
+        {places ? (
+          <NaverMap
+            places={places}
+            onSelect={select}
+            onMapClick={() => {
+              setSelected(null);
+              setSheet("peek");
+            }}
+            bottomInset={open === "peek" ? 0 : 416 - 90} // 펼친 시트가 지도를 덮는 높이
+            height={MAP_H}
+            square
+          />
+        ) :<div className="skeleton !rounded-none" style={{ height: MAP_H }} />}
         <h2 className="t-title pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 via-white/80 to-transparent px-6 pb-10 pt-4">
           오늘의 고리를
           <br />
