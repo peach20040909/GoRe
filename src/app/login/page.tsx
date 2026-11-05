@@ -3,6 +3,7 @@
 // 계정이 없으면 회원가입 → 완료. 비밀번호 찾기는 목업(기능 없음)
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { api, browserLanguage } from "@/lib/client";
 import { setSession, type SessionUser } from "@/lib/session";
 
@@ -55,7 +56,10 @@ export default function LoginPage() {
     );
 
   return (
-    <div className="mx-auto max-w-sm px-6 pt-12">
+    <div className="relative mx-auto max-w-sm px-6 pb-8 pt-14">
+      <Link href="/" replace aria-label="닫고 홈으로" className="absolute right-3 top-2 flex size-11 items-center justify-center rounded-xl text-[28px] leading-none text-muted">
+        <span aria-hidden="true">×</span>
+      </Link>
       <p className="text-sm font-semibold text-brand">GO AGAIN. RECONNECT.</p>
       <h1 className="mt-1 text-2xl font-extrabold">{mode === "login" ? "로그인" : "회원가입"}</h1>
       <form onSubmit={submit} className="mt-6 flex flex-col gap-3" noValidate>
