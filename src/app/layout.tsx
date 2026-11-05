@@ -25,8 +25,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
             <Link href="/" className="font-bold">{SERVICE.name}</Link>
             <nav className="flex gap-4 text-sm text-muted">
-              <Link href="/app" className="hover:text-text">시작하기</Link>
-              <Link href="/history" className="hover:text-text">기록</Link>
+              <Link href="/" className="hover:text-text">홈</Link>
+              <Link href="/memories" className="hover:text-text">추억</Link>
             </nav>
           </div>
         </header>

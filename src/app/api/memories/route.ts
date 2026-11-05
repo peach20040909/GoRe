@@ -218,7 +218,7 @@ type MemoryListRow = Pick<
   | "opened_at"
   | "content"
   | "photo_url"
-> & { places: { slug: string; name_ko: string; name_en: string } | null };
+> & { places: { slug: string; name_ko: string; name_en: string; lat: number | null; lng: number | null } | null; ai_card: Record<string, unknown> | null };
 
 type MemoryListItem = {
   id: string;
@@ -235,6 +235,9 @@ type MemoryListItem = {
   openedAt: string | null;
   content: string | null;
   photoUrl: string | null;
+  card: Record<string, unknown> | null; // 기억 카드 디자인 값·각인 (잠겨 있어도 보임 — 원문 아님)
+  placeLat: number | null; // 추억 지도용
+  placeLng: number | null;
 };
 
 /**
@@ -260,6 +263,9 @@ function toListItem(row: MemoryListRow, language: string): MemoryListItem {
     openedAt: row.opened_at,
     content: opened ? row.content : null,
     photoUrl: opened ? row.photo_url : null,
+    card: row.ai_card ?? null,
+    placeLat: place?.lat ?? null,
+    placeLng: place?.lng ?? null,
   };
 }
 
@@ -273,7 +279,7 @@ export async function GET(req: Request) {
 
     const rows = await db<MemoryListRow[]>(
       `/memories?user_id=eq.${user.id}` +
-        "&select=id,medium,ai_title,ai_emotion,status,unlock_type,unlock_at,unlock_note,created_at,opened_at,content,photo_url,places(slug,name_ko,name_en)" +
+        "&select=id,medium,ai_title,ai_emotion,status,unlock_type,unlock_at,unlock_note,created_at,opened_at,content,photo_url,ai_card,places(slug,name_ko,name_en,lat,lng)" +
         "&order=created_at.desc&limit=200",
     );
 

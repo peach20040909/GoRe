@@ -19,7 +19,7 @@ export default function Home() {
       .catch(() => setPlaces([]));
   }, []);
 
-  const open = useCallback((slug: string) => router.push(`/preview/ar?place=${slug}`), [router]);
+  const open = useCallback((slug: string) => router.push(`/gori/${slug}`), [router]);
 
   return (
     <div className="pt-6">
