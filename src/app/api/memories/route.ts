@@ -1,10 +1,13 @@
-// /api/memories — POST: 기억 저장 (docs/API.md #4)
+// /api/memories
+//  - POST: 기억 저장 (docs/API.md #4)
+//  - GET : 내 타임캡슐 목록 (docs/API.md #5)
 import { NextResponse } from "next/server";
 import {
   assertDeviceId,
   assertSlug,
   db,
   getPlaceBySlug,
+  getUserByDevice,
   isUuid,
   normalizeLanguage,
   uploadPhoto,
@@ -145,4 +148,90 @@ export async function POST(req: Request) {
   } catch (e) {
     return toErrorResponse(e, "POST /api/memories");
   }
+}
+
+/* ───────────────────────── GET /api/memories?deviceId=uuid ───────────────────────── */
+
+type MemoryListRow = Pick<
+  MemoryRow,
+  | "id"
+  | "medium"
+  | "ai_title"
+  | "ai_emotion"
+  | "status"
+  | "unlock_type"
+  | "unlock_at"
+  | "unlock_note"
+  | "created_at"
+  | "opened_at"
+  | "content"
+  | "photo_url"
+> & { places: { slug: string; name_ko: string; name_en: string } | null };
+
+type MemoryListItem = {
+  id: string;
+  placeSlug: string | null;
+  placeName: string | null;
+  medium: string;
+  title: string | null;
+  emotion: string | null;
+  status: MemoryRow["status"];
+  unlockType: MemoryRow["unlock_type"];
+  unlockAt: string | null;
+  unlockNote: string | null;
+  createdAt: string;
+  openedAt: string | null;
+  content: string | null;
+  photoUrl: string | null;
+};
+
+/**
+ * ★ 핵심 규칙: 열리기 전(locked)에는 본인도 content / photoUrl 을 볼 수 없다.
+ * 원문을 복사해서 null 로 덮는 방식이 아니라, status 가 정확히 "opened" 일 때만 채운다
+ * (예상 밖의 status 값이 와도 잠긴 것으로 취급 → 새지 않음).
+ */
+function toListItem(row: MemoryListRow, language: string): MemoryListItem {
+  const opened = row.status === "opened";
+  const place = row.places;
+  return {
+    id: row.id,
+    placeSlug: place?.slug ?? null,
+    placeName: place ? (language === "ko" ? place.name_ko : place.name_en) : null,
+    medium: row.medium,
+    title: row.ai_title,
+    emotion: row.ai_emotion,
+    status: row.status,
+    unlockType: row.unlock_type,
+    unlockAt: row.unlock_at,
+    unlockNote: row.unlock_note,
+    createdAt: row.created_at,
+    openedAt: row.opened_at,
+    content: opened ? row.content : null,
+    photoUrl: opened ? row.photo_url : null,
+  };
+}
+
+export async function GET(req: Request) {
+  try {
+    const deviceId = assertDeviceId(new URL(req.url).searchParams.get("deviceId"));
+
+    // 처음 온 기기는 빈 목록 (여기서 유저를 만들지는 않는다)
+    const user = await getUserByDevice(deviceId);
+    if (!user) return noStore({ memories: [] });
+
+    const rows = await db<MemoryListRow[]>(
+      `/memories?user_id=eq.${user.id}` +
+        "&select=id,medium,ai_title,ai_emotion,status,unlock_type,unlock_at,unlock_note,created_at,opened_at,content,photo_url,places(slug,name_ko,name_en)" +
+        "&order=created_at.desc&limit=200",
+    );
+
+    return noStore({ memories: (rows ?? []).map((r) => toListItem(r, user.language)) });
+  } catch (e) {
+    return toErrorResponse(e, "GET /api/memories");
+  }
+}
+
+/** 개인 기억 목록이라 CDN/브라우저 캐시에 남기지 않는다 */
+function noStore(data: unknown) {
+  return NextResponse.json(data, { headers: { "Cache-Control": "no-store" } });
 }
