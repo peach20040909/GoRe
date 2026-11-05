@@ -1,12 +1,13 @@
 "use client";
-// 02 추억 (Figma): 장소 필터 칩 + 기억 사진 카드 피드 → 상세
-import { useEffect, useMemo, useState } from "react";
+// 02 추억 (Figma): 관광자원 분류 필터 + 기억 사진 카드 피드 → 상세
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BottomNav, Character, Header } from "@/components/ds";
 import { goriAsset, goriById } from "@/lib/goris";
 import { loadMemories, type MemoryItem } from "@/lib/memories";
 import { getToken } from "@/lib/session";
+import { BADGES, CATEGORIES } from "@/lib/badges";
 
 const fmt = (d: string) => new Date(d).toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\s/g, "").replace(/\.$/, "");
 
@@ -23,9 +24,8 @@ export default function MemoriesPage() {
     loadMemories().then(setItems).catch((e: Error) => setError(e.message));
   }, [router]);
 
-  // 걸었던 고리 위치들 → 필터 칩
-  const places = useMemo(() => [...new Map((items ?? []).filter((i) => i.placeSlug).map((i) => [i.placeSlug!, i.placeName ?? ""])).entries()], [items]);
-  const shown = (items ?? []).filter((it) => !filter || it.placeSlug === filter);
+  // 수집 화면과 같은 장소 → 관광자원 분류를 사용한다.
+  const shown = (items ?? []).filter((it) => !filter || BADGES.some((b) => b.category === filter && it.placeSlug !== null && b.places.includes(it.placeSlug)));
   const chip = (on: boolean) => `t-strong h-8 shrink-0 rounded-lg px-3 ${on ? "bg-accent text-white" : "border border-line text-muted"}`;
 
   return (
@@ -35,10 +35,10 @@ export default function MemoriesPage() {
         <p className="relative z-10 text-[19px] font-bold leading-[27px]">다시 꺼내 보는<br />우리의 순간</p>
         <img src="/theme/pink-friend.png" alt="" className="-right-0.5 top-1 h-[90px] w-[90px]" />
       </div>
-      <div className="flex gap-2 overflow-x-auto px-6 pb-4 pt-2.5">
-        <button className={chip(!filter)} onClick={() => setFilter(null)}>전체</button>
-        {places.map(([slug, name]) => (
-          <button key={slug} className={chip(filter === slug)} onClick={() => setFilter(slug)}>{name}</button>
+      <div className="flex flex-wrap gap-2 px-6 pb-4 pt-2.5" role="group" aria-label="관광자원 분류 필터">
+        <button className={chip(!filter)} aria-pressed={!filter} onClick={() => { setFilter(null); setMenu(null); }}>전체</button>
+        {CATEGORIES.map((category) => (
+          <button key={category} className={chip(filter === category)} aria-pressed={filter === category} onClick={() => { setFilter(category); setMenu(null); }}>{category}</button>
         ))}
       </div>
 
@@ -49,6 +49,13 @@ export default function MemoriesPage() {
           <div className="rounded-2xl border border-line p-6 text-center">
             <p className="t-strong">아직 걸어 둔 고리가 없어요</p>
             <Link href="/" className="btn mt-4 w-full">장소 고르러 가기</Link>
+          </div>
+        )}
+        {!!items?.length && shown.length === 0 && !error && (
+          <div className="rounded-2xl border border-line bg-canvas p-6 text-center" role="status">
+            <p className="t-strong">이 분류에 남긴 고리가 없어요</p>
+            <p className="t-caption mt-2 text-muted">다른 분류를 선택하거나 전체 추억을 확인해 보세요.</p>
+            <button className="btn btn-ghost mt-4 w-full" onClick={() => setFilter(null)}>전체 보기</button>
           </div>
         )}
         {shown.map((it) => {
