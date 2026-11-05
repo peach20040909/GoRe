@@ -1,26 +1,14 @@
-// 장소별 매개체와 3D 모델 등록표. 모델을 바꾸려면 public/models/에 .glb를 넣고 여기 한 줄만 고치면 됨.
-// tintMaterials: 카드 색(그날의 하늘색)으로 칠할 재질 이름 (Blender 재질 이름 그대로)
+// 장소 → 그 장소의 고리(매개체). 장소 전용 고리가 없으면 기본 고리(사랑의 자물쇠).
+// 고리 데이터·파일은 src/lib/goris.ts
 import type { Medium } from "@/components/MemoryCard";
+import { DEFAULT_GORI, GORIS, goriAsset, goriById } from "@/lib/goris";
 
-export type MediumModel = { medium: Medium; label: string; glb?: string; tintMaterials?: string[] };
+export type MediumModel = { goriId: string; medium: Medium; label: string; glb?: string; tintMaterials?: string[] };
 
-export const DEFAULT_MEDIUM: MediumModel = { medium: "lock", label: "자물쇠" };
+// placeSlug가 goris.ts에 없는 장소의 고리 지정 (시연 장소 등)
+const PLACE_OVERRIDE: Record<string, string> = { "demo-hall": "glass-bottle" };
 
-export const PLACE_MEDIA: Record<string, MediumModel> = {
-  "hongje-falls": {
-    medium: "bottle",
-    label: "유리병 편지",
-    glb: "/models/hongje-bottle.glb",
-    tintMaterials: ["Cascades in mist ink"],
-  },
-  gyeongbokgung: { medium: "paper", label: "원고지" },
-  dongnimmun: { medium: "lock", label: "자물쇠" },
-  "demo-hall": {
-    medium: "bottle",
-    label: "유리병 편지",
-    glb: "/models/hongje-bottle.glb",
-    tintMaterials: ["Cascades in mist ink"],
-  },
-};
-
-export const mediaFor = (slug: string) => PLACE_MEDIA[slug] ?? DEFAULT_MEDIUM;
+export function mediaFor(slug: string): MediumModel {
+  const g = goriById(PLACE_OVERRIDE[slug] ?? "") ?? GORIS.find((x) => x.placeSlug === slug) ?? DEFAULT_GORI;
+  return { goriId: g.id, medium: g.cardShape, label: g.name, glb: goriAsset(g.id).model };
+}

@@ -17,10 +17,12 @@ import {
 } from "@/lib/db";
 import { HttpError, optionalString, readJsonBody, requireString, toErrorResponse } from "@/lib/http";
 import { makePublicVersion } from "@/lib/public-memory";
+import { GORI_IDS } from "@/lib/goris";
 
 export const runtime = "nodejs";
 
-const MEDIUMS = ["lock", "paper", "beacon", "bottle"] as const; // MemoryCard·media.ts 와 같은 목록
+// 매개체 = 고리 15종 id (src/lib/goris.ts). 예전 모양 이름(lock/paper/beacon/bottle)도 호환용으로 허용
+const MEDIUMS: readonly string[] = [...GORI_IDS, "lock", "paper", "beacon", "bottle"];
 const VISIBILITIES = ["private", "public_anonymous"] as const;
 const UNLOCK_TYPES = ["date", "season", "revisit", "together"] as const;
 const RECORD_TYPES = ["wish", "retro", "letter"] as const;
@@ -100,7 +102,7 @@ export async function POST(req: Request) {
     const nickname = optionalString(body, "nickname");
     const language = normalizeLanguage(body.language);
     const placeSlug = assertSlug(body.placeSlug);
-    const medium = pickEnum(body.medium, MEDIUMS, "lock", "medium");
+    const medium = pickEnum(body.medium, MEDIUMS, "love-lock", "medium");
     const visibility = pickEnum(body.visibility, VISIBILITIES, "private", "visibility");
     const unlockType = pickEnum(body.unlockType, UNLOCK_TYPES, "revisit", "unlockType");
 
