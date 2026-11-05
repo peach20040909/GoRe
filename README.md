@@ -1,11 +1,15 @@
-# MEMORY SEOUL — 서울에 남기는 우리의 시간
+# 고리 (Go, Re)
 
-> 서울의 문화 공간에 지금의 기억을 **맡기고**, 다시 와야 꺼낼 수 있게 하는 AI 기록 서비스
+### GO AGAIN. RECONNECT.
+
+> 서울의 문화 공간에 지금의 기억을 **맡기고**, 다시 와야 꺼낼 수 있게 하는 AI 기록 서비스.
+> 다시 오면(Go Again), 그때의 나와 다시 이어진다(Reconnect). 기억을 장소에 거는 **고리**.
 
 2026학년도 명지대학교 AI 창의적 아이디어 해커톤 · 6조
 주제: **AI × K-콘텐츠, Local to Global** — 관광자원에 기록 문화를 연결하는 서비스
 
-- 배포: https://mju-ai-hackathon.vercel.app
+- 배포: https://gori.vercel.app
+- 저장소: https://github.com/peach20040909/gori
 - API 명세: [`docs/API.md`](docs/API.md) · DB 구조: [`supabase/schema.sql`](supabase/schema.sql)
 
 ---

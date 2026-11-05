@@ -1,4 +1,4 @@
-// MEMORY SEOUL의 AI 기능 모음 (서버 전용). 프롬프트·응답 형식은 prompts.ts.
+// 고리(Go, Re)의 AI 기능 모음 (서버 전용). 프롬프트·응답 형식은 prompts.ts.
 // 모든 함수는 키가 없거나 응답이 이상하면 시연용 예시 응답을 돌려주고 mocked: true를 붙임 → 화면이 멈추지 않음.
 import { extractJson, generate } from "@/lib/ai";
 import {

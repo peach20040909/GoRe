@@ -3,8 +3,8 @@
 import { z } from "zod";
 
 export const SERVICE = {
-  name: process.env.NEXT_PUBLIC_APP_NAME || "MEMORY SEOUL",
-  oneLiner: "서울의 문화 공간에 지금의 기억을 맡기고, 다시 와야 꺼낼 수 있는 AI 기록 서비스",
+  name: process.env.NEXT_PUBLIC_APP_NAME || "고리 Go, Re",
+  oneLiner: "GO AGAIN. RECONNECT. 서울의 문화 공간에 기억을 맡기고, 다시 와야 꺼내는 AI 기록 서비스",
   inputLabel: "지금 상황을 알려주세요",
   inputPlaceholder: "예) 다음 주에 팀플 발표가 있는데 역할 분담이 안 돼서 고민이에요",
 };
@@ -46,7 +46,7 @@ export const ResultSchema = z.object({
 });
 export type Result = z.infer<typeof ResultSchema>;
 
-// ───────────────────────── MEMORY SEOUL AI ─────────────────────────
+// ───────────────────────── 고리(Go, Re) AI ─────────────────────────
 // 각 프롬프트는 JSON 한 개만 받도록 설계. 응답은 아래 zod 스키마로 검증하고, 실패하면 memory-ai.ts가 예시 응답으로 대체.
 
 const LANG_RULE = (lang: string) =>

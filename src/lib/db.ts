@@ -1,4 +1,4 @@
-// MEMORY SEOUL — Supabase 접근 공통 모듈 (★ 서버 전용: API 라우트에서만 import)
+// 고리(Go, Re) — Supabase 접근 공통 모듈 (★ 서버 전용: API 라우트에서만 import)
 // - 라이브러리 없이 fetch만 사용 (Supabase REST + Storage)
 // - SUPABASE_SERVICE_ROLE_KEY 는 서버에서만 읽는다. NEXT_PUBLIC_ 붙이기 금지,
 //   "use client" 컴포넌트에서 이 파일을 import 하면 안 됨.
