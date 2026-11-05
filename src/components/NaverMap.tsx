@@ -47,7 +47,7 @@ const pin = (name: string, img: string) =>
         <img src="${img}" style="height:46px;margin-top:3px" alt=""></div></div>
     <div style="background:#fff;border-radius:8px;padding:6px 12px;font:500 14px/20px Pretendard,system-ui;color:#171717;white-space:nowrap;box-shadow:0 4px 8px rgba(0,0,0,.08)">${name}</div></div>`;
 
-export function NaverMap({ places, onSelect, className, height = "min(70vh, 480px)" }: { places: MapPlace[]; onSelect?: (slug: string) => void; className?: string; height?: string }) {
+export function NaverMap({ places, onSelect, className, height = "min(70vh, 480px)", square }: { places: MapPlace[]; onSelect?: (slug: string) => void; className?: string; height?: string; square?: boolean }) {
   const el = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(CLIENT_ID ? null : "지도 키(NEXT_PUBLIC_NAVER_MAP_CLIENT_ID)가 없어요");
 
@@ -63,7 +63,7 @@ export function NaverMap({ places, onSelect, className, height = "min(70vh, 480p
           const b = new maps.LatLngBounds(center, center);
           pts.forEach((p) => b.extend(new maps.LatLng(p.lat!, p.lng!)));
           // 핀 이름표가 마커 위 가운데에 붙어서, 좌우 여백이 좁으면 양 끝 이름표가 잘림
-          map.fitBounds(b, { top: 100, right: 70, bottom: 60, left: 70 });
+          map.fitBounds(b, { top: 170, right: 70, bottom: 110, left: 70 });
         }
         pts.forEach((p) => {
           const m = new maps.Marker({
@@ -79,7 +79,7 @@ export function NaverMap({ places, onSelect, className, height = "min(70vh, 480p
   }, [places, onSelect]);
 
   return (
-    <div className={className} style={{ position: "relative", width: "100%", height, borderRadius: 16, overflow: "hidden", background: "#f5f5f5" }}>
+    <div className={className} style={{ position: "relative", width: "100%", height, borderRadius: square ? 0 : 16, overflow: "hidden", background: "#f5f5f5" }}>
       <div ref={el} style={{ position: "absolute", inset: 0 }} />
       {error && (
         <p style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, textAlign: "center", color: "#6b6f76", fontSize: 14 }}>

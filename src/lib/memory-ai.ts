@@ -101,7 +101,7 @@ export function judgeRevisit(input: {
       sameSpot: true,
       confidence: 0.8,
       reason: "(예시 응답) 같은 자리로 판정했어요",
-      reunionReport: "그날 이 자리에 남긴 기억을 다시 꺼냈어요. 그 사이 계절이 바뀌었네요. 지금의 마음도 한 줄 더 남겨 볼까요?",
+      reunionReport: "그날 이 자리에 남긴 기억을 다시 꺼냈어요. 그 사이 계절이 바뀌었네요. 지금의 고리도 하나 더 걸어 볼까요?",
     },
     images
   );
