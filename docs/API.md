@@ -1,0 +1,196 @@
+# MEMORY SEOUL — API 명세 (팀 분담용)
+
+서울의 장소에 지금의 기억을 맡기고, 다시 와야 열리는 AI 기록 서비스.
+DB 구조는 [`supabase/schema.sql`](../supabase/schema.sql) 참고.
+
+## 공통 규칙
+
+- 모든 API는 JSON in / JSON out. 실패하면 `{ "error": "사람이 읽을 메시지" }` + 4xx/5xx
+- 로그인 없음. 브라우저가 `localStorage`에 만든 `deviceId`(uuid)로 사용자 구분
+  - MVP 한계: deviceId만 알면 남의 기억 조회 가능. 정식 서비스에선 로그인으로 교체
+- 사진은 브라우저에서 **긴 변 1280px JPEG data URL**로 줄여서 보냄 (Vercel 요청 한도 4.5MB)
+- AI 호출은 `src/lib/ai.ts`의 `generate()`만 사용. 키가 없거나 실패하면 `mocked: true` → 각 API가 **시연용 예시 응답**을 돌려줘야 함 (화면이 멈추면 안 됨)
+- DB 접근은 서버(API 라우트)에서만, `SUPABASE_SERVICE_ROLE_KEY`로. 브라우저에서 Supabase 직접 호출 금지
+
+## 환경변수
+
+| 이름 | 설명 |
+|---|---|
+| `SUPABASE_URL` | Supabase 프로젝트 URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | 서버 전용 키 (절대 `NEXT_PUBLIC_` 붙이지 말 것) |
+| `ANTHROPIC_API_KEY` | AI 키 (없으면 mock) |
+| `ADMIN_KEY` | `/api/places/locate` 보호용 아무 문자열 |
+
+## 엔드포인트 한눈에
+
+| # | 메서드 · 경로 | AI | 우선순위 | 담당(제안) |
+|---|---|---|---|---|
+| 1 | `GET /api/places` | | P0 | 백엔드 |
+| 2 | `POST /api/places/identify` | ✅ 장소 판정 | P0 | AI |
+| 3 | `POST /api/memories/draft` | ✅ 기억 카드 + 열림 조건 제안 | P0 | AI |
+| 4 | `POST /api/memories` | ✅ 익명화·번역 (공개 시) | P0 | 백엔드 + AI |
+| 5 | `GET /api/memories?deviceId=` | | P0 | 백엔드 |
+| 6 | `POST /api/memories/[id]/revisit` | ✅ 같은 자리 판정 + 재회 리포트 | P0 | AI |
+| 7 | `GET /api/places/[slug]/layer?lang=` | | P0 | 백엔드 |
+| 8 | `POST /api/places/locate` | | P1 | 백엔드 |
+
+공통 기반(먼저 1명이 만들고 공유): `src/lib/db.ts` — Supabase REST 호출 헬퍼, 사진 업로드 함수
+
+---
+
+## 1. `GET /api/places` — 장소 목록
+
+입장 화면이 GPS로 가장 가까운 장소를 찾을 때 사용. 거리 계산은 브라우저에서.
+
+응답
+```json
+{ "places": [
+  { "slug": "hongje-falls", "name_ko": "홍제폭포", "name_en": "Hongje Falls",
+    "lat": 37.58, "lng": 126.93, "radius_m": 150 }
+] }
+```
+- `lat`/`lng`가 아직 비어 있는 장소는 `null`로 내려줌 (GPS 자동 입장에서 제외)
+
+## 2. `POST /api/places/identify` — 사진으로 장소 판정 (AI)
+
+GPS가 애매하거나 실내일 때, 주변 사진으로 어느 장소인지 판정.
+
+요청
+```json
+{ "imageDataUrl": "data:image/jpeg;base64,..." }
+```
+응답
+```json
+{ "slug": "hongje-falls", "confidence": 0.86, "reason": "인공 암벽 폭포와 옆 유리 카페가 보입니다", "mocked": false }
+```
+- 어느 장소도 아니면 `slug: null`
+- AI 입력: 사진 + 모든 장소의 `description` (+ `place_photos` 기준 사진이 있으면 함께)
+- mock: `slug: "demo-hall", confidence: 0.9`
+
+## 3. `POST /api/memories/draft` — 기억 카드 + 열림 조건 제안 (AI, DB 저장 안 함)
+
+사용자가 쓴 기억을 정리하고, 언제·어떻게 다시 열지 2~3개 제안.
+
+요청
+```json
+{ "placeSlug": "hongje-falls", "content": "졸업 전에 친구들이랑 여기서 사진 찍었다. 취업하면 다시 오자고 약속함", "language": "ko" }
+```
+응답
+```json
+{
+  "title": "졸업 전, 폭포 앞의 약속",
+  "keywords": ["졸업", "친구", "약속"],
+  "emotion": "설렘",
+  "unlockOptions": [
+    { "type": "revisit", "unlockAt": null, "note": "취업 후 이 자리에 다시 오면 열려요" },
+    { "type": "date", "unlockAt": "2027-11-06T00:00:00+09:00", "note": "1년 뒤 오늘, 이 자리에서 열려요" },
+    { "type": "together", "unlockAt": null, "note": "그날의 친구와 함께 와야 열려요" }
+  ],
+  "mocked": false
+}
+```
+- `type`: `date`(날짜 이후 + 그 자리) / `revisit`(다시 오면) / `together`(함께 와야 — MVP에선 revisit처럼 처리)
+- 결과는 사용자 언어(`language`)로
+
+## 4. `POST /api/memories` — 기억 저장
+
+요청
+```json
+{
+  "deviceId": "uuid", "nickname": "민준", "language": "ko",
+  "placeSlug": "hongje-falls", "medium": "lock",
+  "content": "원문", "photoDataUrl": "data:image/jpeg;base64,...",
+  "visibility": "public_anonymous",
+  "title": "...", "keywords": ["..."], "emotion": "...",
+  "unlockType": "date", "unlockAt": "2027-11-06T00:00:00+09:00", "unlockNote": "...",
+  "parentMemoryId": null
+}
+```
+응답
+```json
+{ "memory": { "id": "uuid", "status": "locked", "...": "memories 테이블 행" } }
+```
+처리 순서
+1. `users`를 `device_id`로 upsert
+2. 사진 → Supabase Storage `photos` 버킷 업로드 → `photo_url`
+3. `memories` insert (`status: locked`)
+4. `visibility`가 `public_anonymous`면 **서버에서** AI로 익명화 + 번역 → `public_memories` insert
+   - 이름·전화번호·학교 등 식별 정보 제거, 마음만 남긴 한 줄 (예: "엄마 ○○○ 수술 잘 되게" → "가족의 회복을 비는 기억")
+   - 번역: `{ "ko": "...", "en": "...", "ja": "...", "zh": "..." }`
+   - **브라우저가 보낸 익명화 문장을 믿지 말 것** (원문이 공개될 수 있음)
+- `medium`: `lock`(자물쇠) / `letter`(편지) / `capsule`(상자)
+
+## 5. `GET /api/memories?deviceId=uuid` — 내 타임캡슐 목록
+
+응답
+```json
+{ "memories": [
+  { "id": "uuid", "placeSlug": "hongje-falls", "placeName": "홍제폭포", "medium": "lock",
+    "title": "...", "emotion": "...", "status": "locked",
+    "unlockType": "date", "unlockAt": "...", "unlockNote": "...",
+    "createdAt": "...", "openedAt": null,
+    "content": null, "photoUrl": null }
+] }
+```
+- **잠긴 기억은 `content`, `photoUrl`을 `null`로** (열리기 전엔 본인도 못 봄 — 타임캡슐 느낌)
+- 열린 기억만 원문과 사진을 내려줌
+- 최신순
+
+## 6. `POST /api/memories/[id]/revisit` — 다시 방문, 같은 자리 판정 (AI)
+
+요청
+```json
+{ "deviceId": "uuid", "photoDataUrl": "data:image/jpeg;base64,...", "lat": 37.58, "lng": 126.93, "demo": false }
+```
+응답 (열림)
+```json
+{ "opened": true, "sameSpot": true, "confidence": 0.82,
+  "reason": "같은 암벽과 징검다리가 같은 각도로 보입니다",
+  "reunionReport": "1년 전 오늘 당신은 친구들과 이 자리에서 약속을 남겼어요. ...",
+  "memory": { "content": "원문", "photoUrl": "...", "...": "..." } }
+```
+응답 (안 열림)
+```json
+{ "opened": false, "sameSpot": false, "confidence": 0.3, "reason": "다른 장소로 보여요", "lockedReason": "같은 자리에서 다시 찍어 주세요" }
+```
+처리 순서
+1. 본인 기억인지 확인 (`deviceId` → `users.id` = `memories.user_id`), 아니면 403
+2. `unlock_type = date`이고 아직 날짜 전이면 → `lockedReason: "2027년 11월 6일부터 열려요"` (단, `demo: true`면 건너뜀 — 발표용)
+3. AI에 **잠글 때 사진(URL) + 지금 사진** 두 장과 장소 설명을 보내 같은 자리인지 판정. 같으면 원문·잠근 날짜·오늘 날짜로 재회 리포트도 같은 호출에서 작성
+4. `revisits` insert, 같으면 `memories.status = opened`, `opened_at = now()`
+- mock: `sameSpot: true, confidence: 0.8`
+
+## 7. `GET /api/places/[slug]/layer?lang=en` — 장소의 기억 층 (공개 벽)
+
+응답
+```json
+{ "place": { "slug": "hongje-falls", "name": "Hongje Falls" },
+  "count": 128,
+  "items": [ { "id": "uuid", "text": "A promise made with friends before graduation", "createdAt": "..." } ] }
+```
+- `public_memories`에서 `hidden = false`만, 최신순 50개
+- `text`는 `translations[lang]`, 없으면 `anon_text`
+
+## 8. `POST /api/places/locate` — 장소 좌표 등록 (관리자)
+
+현장에서 "현재 위치로 저장" 버튼용.
+
+요청
+```json
+{ "slug": "demo-hall", "lat": 37.58, "lng": 126.92, "adminKey": "..." }
+```
+응답 `{ "ok": true }` / `adminKey`가 `ADMIN_KEY`와 다르면 401
+
+---
+
+## 화면 ↔ API
+
+| 화면 | 쓰는 API |
+|---|---|
+| 입장 (GPS 자동 → 애매하면 카메라) | 1, 2 |
+| 장소 화면 (기억 층 + 기억 남기기 버튼) | 7 |
+| 기억 남기기 (사진·글 → 카드 → 공개 범위 → 열림 조건 → 잠금) | 3, 4 |
+| 내 타임캡슐 (목록 → 다시 방문 → 열림 + 재회 리포트) | 5, 6 |
+| 관리자 (좌표 저장) | 8 |
+
+프런트 담당은 위 응답 예시를 그대로 가짜 데이터로 써서 API 완성 전에 화면부터 만들 수 있음.

@@ -6,8 +6,13 @@ export type AiInput = {
   prompt: string;
   json?: boolean; // true면 JSON 객체만 반환하도록 요청
   imageDataUrl?: string; // "data:image/png;base64,..." (선택)
+  images?: string[]; // 여러 장: data URL 또는 https URL (사진 비교용)
   maxTokens?: number;
 };
+
+function allImages(i: AiInput) {
+  return [...(i.images ?? []), ...(i.imageDataUrl ? [i.imageDataUrl] : [])];
+}
 
 export type AiOutput = { text: string; provider: string; mocked: boolean };
 
@@ -28,11 +33,11 @@ function splitDataUrl(dataUrl: string) {
 }
 
 async function callAnthropic(i: AiInput): Promise<string> {
-  const content: unknown[] = [];
-  if (i.imageDataUrl) {
-    const { mediaType, data } = splitDataUrl(i.imageDataUrl);
-    content.push({ type: "image", source: { type: "base64", media_type: mediaType, data } });
-  }
+  const content: unknown[] = allImages(i).map((img) => {
+    if (img.startsWith("http")) return { type: "image", source: { type: "url", url: img } };
+    const { mediaType, data } = splitDataUrl(img);
+    return { type: "image", source: { type: "base64", media_type: mediaType, data } };
+  });
   content.push({ type: "text", text: i.prompt });
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -41,22 +46,27 @@ async function callAnthropic(i: AiInput): Promise<string> {
       "content-type": "application/json",
       "x-api-key": process.env.ANTHROPIC_API_KEY!,
       "anthropic-version": "2023-06-01",
+      "anthropic-beta": "server-side-fallback-2026-07-01",
     },
     body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-5",
-      max_tokens: i.maxTokens ?? 2000,
+      model: process.env.ANTHROPIC_MODEL || "claude-opus-5-5",
+      max_tokens: i.maxTokens ?? 4000,
+      // 판정·정리 위주라 깊게 생각할 필요 없음 → 시연 속도 우선
+      output_config: { effort: "low" },
+      fallbacks: "default", // 안전 분류기가 거절하면 서버가 다른 모델로 자동 재시도
       system: i.json ? `${i.system}\n\n반드시 유효한 JSON 객체 하나만 출력하라. 코드블록, 설명 금지.` : i.system,
       messages: [{ role: "user", content }],
     }),
   });
   if (!res.ok) throw new Error(`Anthropic ${res.status}: ${await res.text()}`);
   const data = await res.json();
-  return data.content?.map((c: { text?: string }) => c.text ?? "").join("") ?? "";
+  if (data.stop_reason === "refusal") throw new Error("Anthropic refusal");
+  return data.content?.map((c: { type: string; text?: string }) => (c.type === "text" ? c.text ?? "" : "")).join("") ?? "";
 }
 
 async function callOpenAI(i: AiInput): Promise<string> {
   const userContent: unknown[] = [{ type: "text", text: i.prompt }];
-  if (i.imageDataUrl) userContent.push({ type: "image_url", image_url: { url: i.imageDataUrl } });
+  for (const url of allImages(i)) userContent.push({ type: "image_url", image_url: { url } });
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
