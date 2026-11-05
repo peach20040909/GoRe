@@ -112,8 +112,8 @@ export default function Home() {
             </div>
             <p className="t-caption mt-3 text-muted">이곳의 고리 · {mediaFor(selected.slug).label} · 남겨진 기억 {selected.memoryCount ?? 0}개</p>
             <div className="mt-2 flex gap-2.5">
-              <img src={g.sealed} alt="봉인된 고리" className="h-[88px] min-w-0 flex-1 rounded-lg bg-canvas object-cover" />
-              <img src={g.opened} alt="열린 고리" className="h-[88px] min-w-0 flex-1 rounded-lg bg-canvas object-cover" />
+              <img src={g.sealed} alt="봉인된 고리" className="h-[88px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
+              <img src={g.opened} alt="열린 고리" className="h-[88px] min-w-0 flex-1 rounded-lg bg-canvas object-contain" />
             </div>
             <Link href={`/gori/${selected.slug}`} className="btn mt-6 w-full">여기에 고리 걸기</Link>
           </div>
