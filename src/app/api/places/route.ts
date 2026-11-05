@@ -20,7 +20,17 @@ export async function GET() {
     const places = await db<PlaceListItem[]>(
       "/places?select=slug,name_ko,name_en,lat,lng,radius_m&order=created_at.asc,slug.asc",
     );
-    return NextResponse.json({ places: places ?? [] });
+    // 문서에 있는 필드만 명시적으로 내려준다 (description 등 다른 컬럼이 섞여 나가지 않게)
+    return NextResponse.json({
+      places: (places ?? []).map((p) => ({
+        slug: p.slug,
+        name_ko: p.name_ko,
+        name_en: p.name_en,
+        lat: p.lat ?? null,
+        lng: p.lng ?? null,
+        radius_m: p.radius_m,
+      })),
+    });
   } catch (e) {
     return toErrorResponse(e, "GET /api/places");
   }
